@@ -1,0 +1,753 @@
+<?php
+
+class Workedia_Activator {
+
+    public static function activate() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        $installed_ver = get_option('workedia_db_version');
+
+        // Migration: Rename old tables if they exist
+        if (version_compare($installed_ver, '97.3.0', '<')) {
+            self::migrate_tables();
+            self::migrate_settings();
+        }
+
+        $sql = "";
+
+        // Members Table
+        $table_name = $wpdb->prefix . 'workedia_members';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            national_id varchar(14) NOT NULL,
+            member_code tinytext,
+            name tinytext NOT NULL,
+            gender enum('male', 'female') DEFAULT 'male',
+            professional_grade tinytext,
+            specialization tinytext,
+            academic_degree tinytext,
+            university tinytext,
+            faculty tinytext,
+            department tinytext,
+            graduation_date date,
+            residence_street text,
+            residence_city tinytext,
+            residence_governorate tinytext,
+            governorate tinytext,
+            membership_number tinytext,
+            membership_start_date date,
+            membership_expiration_date date,
+            membership_status tinytext,
+            license_number tinytext,
+            license_issue_date date,
+            license_expiration_date date,
+            facility_number tinytext,
+            facility_name tinytext,
+            facility_license_issue_date date,
+            facility_license_expiration_date date,
+            facility_address text,
+            sub_workedia tinytext,
+            facility_category enum('A', 'B', 'C') DEFAULT 'C',
+            last_paid_membership_year int DEFAULT 0,
+            last_paid_license_year int DEFAULT 0,
+            email tinytext,
+            phone tinytext,
+            alt_phone tinytext,
+            notes text,
+            photo_url text,
+            wp_user_id bigint(20),
+            officer_id bigint(20),
+            registration_date date,
+            sort_order int DEFAULT 0,
+            PRIMARY KEY  (id),
+            UNIQUE KEY national_id (national_id),
+            KEY wp_user_id (wp_user_id),
+            KEY officer_id (officer_id)
+        ) $charset_collate;\n";
+
+
+        // Messages Table
+        $table_name = $wpdb->prefix . 'workedia_messages';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            sender_id bigint(20) NOT NULL,
+            receiver_id bigint(20) NOT NULL,
+            member_id mediumint(9),
+            message text NOT NULL,
+            file_url text,
+            governorate varchar(50),
+            is_read tinyint(1) DEFAULT 0,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY sender_id (sender_id),
+            KEY receiver_id (receiver_id),
+            KEY member_id (member_id),
+            KEY governorate (governorate)
+        ) $charset_collate;\n";
+
+        // Logs Table
+        $table_name = $wpdb->prefix . 'workedia_logs';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            user_id bigint(20),
+            action tinytext NOT NULL,
+            details text,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY user_id (user_id)
+        ) $charset_collate;\n";
+
+        // Surveys Table
+        $table_name = $wpdb->prefix . 'workedia_surveys';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            title tinytext NOT NULL,
+            questions text NOT NULL,
+            recipients tinytext NOT NULL,
+            status enum('active', 'completed', 'cancelled') DEFAULT 'active',
+            created_by bigint(20),
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY created_by (created_by)
+        ) $charset_collate;\n";
+
+        // Survey Responses Table
+        $table_name = $wpdb->prefix . 'workedia_survey_responses';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            survey_id mediumint(9) NOT NULL,
+            user_id bigint(20) NOT NULL,
+            responses text NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY survey_id (survey_id),
+            KEY user_id (user_id)
+        ) $charset_collate;\n";
+
+        // Payments Table
+        $table_name = $wpdb->prefix . 'workedia_payments';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            member_id mediumint(9) NOT NULL,
+            amount decimal(10,2) NOT NULL,
+            payment_type enum('membership', 'license', 'facility', 'other', 'penalty') NOT NULL,
+            payment_date date NOT NULL,
+            target_year int,
+            digital_invoice_code varchar(50),
+            paper_invoice_code varchar(50),
+            details_ar text,
+            notes text,
+            created_by bigint(20),
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY member_id (member_id),
+            KEY created_by (created_by)
+        ) $charset_collate;\n";
+
+        // Update Requests Table
+        $table_name = $wpdb->prefix . 'workedia_update_requests';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            member_id mediumint(9) NOT NULL,
+            requested_data text NOT NULL,
+            status enum('pending', 'approved', 'rejected') DEFAULT 'pending',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            processed_at datetime,
+            processed_by bigint(20),
+            PRIMARY KEY  (id),
+            KEY member_id (member_id),
+            KEY status (status)
+        ) $charset_collate;\n";
+
+        // Digital Services Table
+        $table_name = $wpdb->prefix . 'workedia_services';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            name tinytext NOT NULL,
+            description text,
+            fees decimal(10,2) DEFAULT 0,
+            required_fields text,
+            selected_profile_fields text,
+            status enum('active', 'suspended') DEFAULT 'active',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id)
+        ) $charset_collate;\n";
+
+        // Service Requests Table
+        $table_name = $wpdb->prefix . 'workedia_service_requests';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            service_id mediumint(9) NOT NULL,
+            member_id mediumint(9) NOT NULL,
+            request_data text NOT NULL,
+            fees_paid decimal(10,2) DEFAULT 0,
+            status enum('pending', 'processing', 'approved', 'rejected') DEFAULT 'pending',
+            processed_by bigint(20),
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY service_id (service_id),
+            KEY member_id (member_id),
+            KEY status (status)
+        ) $charset_collate;\n";
+
+        // Membership Requests Table
+        $table_name = $wpdb->prefix . 'workedia_membership_requests';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            national_id varchar(14) NOT NULL,
+            name tinytext NOT NULL,
+            gender enum('male', 'female') DEFAULT 'male',
+            professional_grade tinytext,
+            specialization tinytext,
+            academic_degree tinytext,
+            university tinytext,
+            faculty tinytext,
+            department tinytext,
+            graduation_date date,
+            residence_street text,
+            residence_city tinytext,
+            residence_governorate tinytext,
+            governorate tinytext,
+            phone tinytext,
+            email tinytext,
+            notes text,
+            payment_method varchar(50),
+            payment_reference varchar(100),
+            payment_screenshot_url text,
+            doc_qualification_url text,
+            doc_id_url text,
+            doc_military_url text,
+            doc_criminal_url text,
+            doc_photo_url text,
+            current_stage int DEFAULT 1,
+            status varchar(50) DEFAULT 'pending',
+            rejection_reason text,
+            processed_by bigint(20),
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            UNIQUE KEY national_id (national_id),
+            KEY status (status)
+        ) $charset_collate;\n";
+
+        // Notification Templates Table
+        $table_name = $wpdb->prefix . 'workedia_notification_templates';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            template_type varchar(50) NOT NULL,
+            subject varchar(255) NOT NULL,
+            body text NOT NULL,
+            days_before int DEFAULT 0,
+            is_enabled tinyint(1) DEFAULT 1,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY template_type (template_type)
+        ) $charset_collate;\n";
+
+        // Notification Logs Table
+        $table_name = $wpdb->prefix . 'workedia_notification_logs';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            member_id mediumint(9),
+            notification_type varchar(50),
+            recipient_email varchar(100),
+            subject varchar(255),
+            sent_at datetime DEFAULT CURRENT_TIMESTAMP,
+            status varchar(20),
+            PRIMARY KEY  (id),
+            KEY member_id (member_id),
+            KEY sent_at (sent_at)
+        ) $charset_collate;\n";
+
+        // Documents Table
+        $table_name = $wpdb->prefix . 'workedia_documents';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            member_id mediumint(9) NOT NULL,
+            category enum('licenses', 'certificates', 'receipts', 'other') NOT NULL,
+            title varchar(255) NOT NULL,
+            file_url text NOT NULL,
+            file_type varchar(50),
+            created_by bigint(20),
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY member_id (member_id),
+            KEY category (category)
+        ) $charset_collate;\n";
+
+        // Document Logs Table
+        $table_name = $wpdb->prefix . 'workedia_document_logs';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            document_id mediumint(9) NOT NULL,
+            action varchar(50) NOT NULL,
+            user_id bigint(20),
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY document_id (document_id)
+        ) $charset_collate;\n";
+
+        // Publishing Center Templates
+        $table_name = $wpdb->prefix . 'workedia_pub_templates';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            title varchar(255) NOT NULL,
+            content longtext NOT NULL,
+            doc_type varchar(50) DEFAULT 'other',
+            settings text,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id)
+        ) $charset_collate;\n";
+
+        // Publishing Center Generated Documents
+        $table_name = $wpdb->prefix . 'workedia_pub_documents';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            template_id mediumint(9),
+            serial_number varchar(50) NOT NULL,
+            title varchar(255) NOT NULL,
+            content longtext NOT NULL,
+            created_by bigint(20),
+            download_count int DEFAULT 0,
+            last_format varchar(20),
+            options text,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY serial_number (serial_number)
+        ) $charset_collate;\n";
+
+        // Tickets Table
+        $table_name = $wpdb->prefix . 'workedia_tickets';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            member_id mediumint(9) NOT NULL,
+            subject varchar(255) NOT NULL,
+            category varchar(50),
+            priority enum('low', 'medium', 'high') DEFAULT 'medium',
+            status enum('open', 'in-progress', 'closed') DEFAULT 'open',
+            province varchar(50),
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            KEY member_id (member_id),
+            KEY status (status),
+            KEY province (province)
+        ) $charset_collate;\n";
+
+        // Ticket Thread Table
+        $table_name = $wpdb->prefix . 'workedia_ticket_thread';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            ticket_id mediumint(9) NOT NULL,
+            sender_id bigint(20) NOT NULL,
+            message text NOT NULL,
+            file_url text,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY ticket_id (ticket_id),
+            KEY sender_id (sender_id)
+        ) $charset_collate;\n";
+
+        // Pages Table
+        $table_name = $wpdb->prefix . 'workedia_pages';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            title varchar(255) NOT NULL,
+            slug varchar(100) NOT NULL,
+            shortcode varchar(50) NOT NULL,
+            instructions text,
+            settings text,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY slug (slug),
+            UNIQUE KEY shortcode (shortcode)
+        ) $charset_collate;\n";
+
+        // Articles Table
+        $table_name = $wpdb->prefix . 'workedia_articles';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            title varchar(255) NOT NULL,
+            content longtext NOT NULL,
+            image_url text,
+            author_id bigint(20),
+            status enum('publish', 'draft') DEFAULT 'publish',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id)
+        ) $charset_collate;\n";
+
+        // Alerts Table
+        $table_name = $wpdb->prefix . 'workedia_alerts';
+        $sql .= "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            title varchar(255) NOT NULL,
+            message text NOT NULL,
+            severity enum('info', 'warning', 'critical') DEFAULT 'info',
+            must_acknowledge tinyint(1) DEFAULT 0,
+            status enum('active', 'inactive') DEFAULT 'active',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id)
+        ) $charset_collate;\n";
+
+        // Alert Views Table
+        $table_name = $wpdb->prefix . 'workedia_alert_views';
+        $sql .= "CREATE TABLE $table_name (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            alert_id mediumint(9) NOT NULL,
+            user_id bigint(20) NOT NULL,
+            acknowledged tinyint(1) DEFAULT 0,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY alert_id (alert_id),
+            KEY user_id (user_id)
+        ) $charset_collate;\n";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta($sql);
+
+        update_option('workedia_db_version', WORKEDIA_VERSION);
+
+        self::setup_roles();
+        self::seed_notification_templates();
+        self::seed_publishing_templates();
+    }
+
+    private static function seed_publishing_templates() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'workedia_pub_templates';
+
+        $templates = [
+            'experience_cert' => [
+                'title' => 'شهادة خبرة معتمدة',
+                'doc_type' => 'certificate',
+                'content' => '<div style="text-align:center;"><p>تشهد Workedia العامة بأن السيد العضو / <strong>{MEMBER_NAME}</strong></p><p>المقيد برقم قيد: {MEMBERSHIP_NO} ومحافظة: {GOVERNORATE}</p><p>قد اجتاز كافة المتطلبات المهنية المقررة ويعتبر ممارساً معتمداً في تخصصه.</p></div>'
+            ],
+            'official_report' => [
+                'title' => 'تقرير فني رسمي',
+                'doc_type' => 'report',
+                'content' => '<h3>موضوع التقرير: ....................</h3><p>بناءً على المعاينة الفنية والمهنية لعضو Workedia {MEMBER_NAME}، نفيد بالآتي:</p><ul><li>أولاً: .............</li><li>ثانياً: .............</li></ul>'
+            ],
+            'internal_memo' => [
+                'title' => 'مذكرة عرض داخلية',
+                'doc_type' => 'memo',
+                'content' => '<h3>مذكرة عرض إلى: السيد مدير عام Workedia</h3><p>بشأن: .........................</p><p>بالإشارة إلى الطلب المقدم من {MEMBER_NAME}، نحيط سيادتكم علماً بـ .............</p><p style="text-align:left;">وتفضلوا بقبول فائق الاحترام،،</p>'
+            ]
+        ];
+
+        foreach ($templates as $key => $data) {
+            $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE title = %s", $data['title']));
+            if (!$exists) {
+                $wpdb->insert($table, [
+                    'title' => $data['title'],
+                    'doc_type' => $data['doc_type'],
+                    'content' => $data['content']
+                ]);
+            }
+        }
+    }
+
+    private static function seed_notification_templates() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'workedia_notification_templates';
+        $templates = [
+            'membership_renewal' => [
+                'subject' => 'تذكير: تجديد عضوية Workedia',
+                'body' => "عزيزي العضو {member_name}،\n\nنود تذكيركم بقرب موعد تجديد عضويتكم السنوية لعام {year}.\nيرجى السداد لتجنب الغرامات.\n\nشكراً لكم.",
+                'days_before' => 30
+            ],
+            'license_practice' => [
+                'subject' => 'تنبيه: انتهاء تصريح مزاولة المهنة',
+                'body' => "عزيزي العضو {member_name}،\n\nنحيطكم علماً بأن تصريح مزاولة المهنة الخاص بكم سينتهي في {expiry_date}.\nيرجى البدء في إجراءات التجديد.\n\nتحياتنا.",
+                'days_before' => 30
+            ],
+            'license_facility' => [
+                'subject' => 'تنبيه: انتهاء ترخيص المنشأة',
+                'body' => "عزيزي العضو {member_name}،\n\nنحيطكم علماً بأن ترخيص المنشأة {facility_name} سينتهي في {expiry_date}.\nيرجى مراجعة Workedia للتجديد.\n\nشكراً لكم.",
+                'days_before' => 30
+            ],
+            'payment_reminder' => [
+                'subject' => 'إشعار: مستحقات مالية متأخرة',
+                'body' => "عزيزي العضو {member_name}،\n\nيوجد مبالغ مستحقة على حسابكم بقيمة {balance} ج.م.\nنرجو السداد في أقرب وقت ممكن.\n\nWorkedia.",
+                'days_before' => 0
+            ],
+            'welcome_activation' => [
+                'subject' => 'مرحباً بك في المنصة الرقمية لنقابتك',
+                'body' => "أهلاً بك يا {member_name}،\n\nتم تفعيل حسابك بنجاح في المنصة الرقمية.\nيمكنك الآن الاستفادة من كافة الخدمات الإلكترونية.\n\nرقم عضويتك: {membership_number}",
+                'days_before' => 0
+            ],
+            'admin_alert' => [
+                'subject' => 'تنبيه إداري من Workedia',
+                'body' => "عزيزي العضو {member_name}،\n\n{alert_message}\n\nشكراً لكم.",
+                'days_before' => 0
+            ]
+        ];
+
+        foreach ($templates as $type => $data) {
+            $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE template_type = %s", $type));
+            if (!$exists) {
+                $wpdb->insert($table, [
+                    'template_type' => $type,
+                    'subject' => $data['subject'],
+                    'body' => $data['body'],
+                    'days_before' => $data['days_before'],
+                    'is_enabled' => 1
+                ]);
+            }
+        }
+    }
+
+    private static function migrate_settings() {
+        // Core info migration
+        $old_info = get_option('sm_syndicate_info');
+        if ($old_info && !get_option('workedia_info')) {
+            update_option('workedia_info', $old_info);
+        }
+
+        // Settings migration
+        $settings_to_migrate = [
+            'sm_appearance'            => 'workedia_appearance',
+            'sm_labels'                => 'workedia_labels',
+            'sm_notification_settings' => 'workedia_notification_settings',
+            'sm_professional_grades'   => 'workedia_professional_grades',
+            'sm_specializations'       => 'workedia_specializations',
+            'sm_finance_settings'      => 'workedia_finance_settings',
+            'sm_last_backup_download'  => 'workedia_last_backup_download',
+            'sm_last_backup_import'    => 'workedia_last_backup_import',
+            'sm_plugin_version'        => 'workedia_plugin_version'
+        ];
+
+        foreach ($settings_to_migrate as $old => $new) {
+            $val = get_option($old);
+            if ($val !== false && get_option($new) === false) {
+                update_option($new, $val);
+            }
+        }
+    }
+
+    private static function migrate_tables() {
+        global $wpdb;
+        // Rebranding Migration (sm_ -> workedia_)
+        $mappings = array(
+            'sm_members'                => 'workedia_members',
+            'sm_messages'               => 'workedia_messages',
+            'sm_logs'                   => 'workedia_logs',
+            'sm_surveys'                => 'workedia_surveys',
+            'sm_survey_responses'       => 'workedia_survey_responses',
+            'sm_payments'               => 'workedia_payments',
+            'sm_update_requests'        => 'workedia_update_requests',
+            'sm_services'               => 'workedia_services',
+            'sm_service_requests'       => 'workedia_service_requests',
+            'sm_membership_requests'    => 'workedia_membership_requests',
+            'sm_notification_templates' => 'workedia_notification_templates',
+            'sm_notification_logs'      => 'workedia_notification_logs',
+            'sm_documents'              => 'workedia_documents',
+            'sm_document_logs'          => 'workedia_document_logs',
+            'sm_pub_templates'          => 'workedia_pub_templates',
+            'sm_pub_documents'          => 'workedia_pub_documents',
+            'sm_tickets'                => 'workedia_tickets',
+            'sm_ticket_thread'          => 'workedia_ticket_thread',
+            'sm_pages'                  => 'workedia_pages',
+            'sm_articles'               => 'workedia_articles',
+            'sm_alerts'                 => 'workedia_alerts',
+            'sm_alert_views'            => 'workedia_alert_views'
+        );
+
+        foreach ($mappings as $old => $new) {
+            $old_table = $wpdb->prefix . $old;
+            $new_table = $wpdb->prefix . $new;
+            if ($wpdb->get_var("SHOW TABLES LIKE '$old_table'") && !$wpdb->get_var("SHOW TABLES LIKE '$new_table'")) {
+                $wpdb->query("RENAME TABLE $old_table TO $new_table");
+            }
+        }
+
+        $members_table = $wpdb->prefix . 'workedia_members';
+        if ($wpdb->get_var("SHOW TABLES LIKE '$members_table'")) {
+            // Fix Member ID to Member ID (legacy fix if needed)
+            $col_member = $wpdb->get_results("SHOW COLUMNS FROM $members_table LIKE 'member_id'");
+            if (!empty($col_member)) {
+                $wpdb->query("ALTER TABLE $members_table CHANGE member_id member_id mediumint(9)");
+            }
+        }
+    }
+
+    private static function setup_roles() {
+        $workedia_capabilities = array(
+            'read' => true,
+            'manage_options' => true,
+            'workedia_manage_system' => true,
+            'workedia_manage_users' => true,
+            'workedia_manage_members' => true,
+            'workedia_manage_finance' => true,
+            'workedia_manage_licenses' => true,
+            'workedia_print_reports' => true,
+            'workedia_full_access' => true
+        );
+
+        // 1. System Manager (مدير النظام)
+        if (!get_role('workedia_system_admin')) {
+            add_role('workedia_system_admin', 'مدير النظام', $workedia_capabilities);
+        } else {
+            $role = get_role('workedia_system_admin');
+            foreach ($workedia_capabilities as $cap => $grant) {
+                $role->add_cap($cap, $grant);
+            }
+        }
+
+        // Ensure WordPress Administrator has all SM capabilities
+        $admin_role = get_role('administrator');
+        if ($admin_role) {
+            foreach ($workedia_capabilities as $cap => $grant) {
+                $admin_role->add_cap($cap, $grant);
+            }
+        }
+
+        // Add specific caps for Digital Archive
+        $admin_role->add_cap('workedia_manage_archive', true);
+        if (get_role('workedia_system_admin')) get_role('workedia_system_admin')->add_cap('workedia_manage_archive', true);
+        if (get_role('workedia_admin')) get_role('workedia_admin')->add_cap('workedia_manage_archive', true);
+
+        // 2. Workedia Administrator (مسؤول Workedia)
+        $workedia_admin_caps = array(
+            'read' => true,
+            'workedia_manage_system' => true,
+            'workedia_manage_members' => true,
+            'workedia_manage_finance' => true,
+            'workedia_manage_licenses' => true,
+            'workedia_print_reports' => true
+        );
+        if (!get_role('workedia_admin')) {
+            add_role('workedia_admin', 'مسؤول Workedia', $workedia_admin_caps);
+        } else {
+            $role = get_role('workedia_admin');
+            foreach ($workedia_admin_caps as $cap => $grant) {
+                $role->add_cap($cap, $grant);
+            }
+        }
+
+        // 3. Workedia Member (عضو Workedia) - Restricted to personal profile
+        if (!get_role('workedia_member')) {
+            add_role('workedia_member', 'عضو Workedia', array('read' => true));
+        }
+
+        self::migrate_user_roles();
+        self::sync_missing_member_accounts();
+        self::create_pages();
+    }
+
+    private static function create_pages() {
+        global $wpdb;
+        $pages = array(
+            'workedia-login' => array(
+                'title' => 'تسجيل الدخول للنظام',
+                'content' => '[workedia_login]'
+            ),
+            'workedia-admin' => array(
+                'title' => 'لوحة الإدارة النقابية',
+                'content' => '[workedia_admin]'
+            ),
+            'home' => array(
+                'title' => 'الرئيسية',
+                'content' => '[workedia_home]',
+                'shortcode' => 'workedia_home'
+            ),
+            'about-us' => array(
+                'title' => 'عن Workedia',
+                'content' => '[workedia_about]',
+                'shortcode' => 'workedia_about'
+            ),
+            'contact-us' => array(
+                'title' => 'اتصل بنا',
+                'content' => '[workedia_contact]',
+                'shortcode' => 'workedia_contact'
+            ),
+            'articles' => array(
+                'title' => 'أخبار ومقالات',
+                'content' => '[workedia_blog]',
+                'shortcode' => 'workedia_blog'
+            ),
+            'services' => array(
+                'title' => 'الخدمات الرقمية',
+                'content' => '[workedia_services]',
+                'shortcode' => 'workedia_services'
+            )
+        );
+
+        foreach ($pages as $slug => $data) {
+            $existing = get_page_by_path($slug);
+            if (!$existing) {
+                wp_insert_post(array(
+                    'post_title'    => $data['title'],
+                    'post_content'  => $data['content'],
+                    'post_status'   => 'publish',
+                    'post_type'     => 'page',
+                    'post_name'     => $slug
+                ));
+            }
+
+            // Sync with workedia_pages table
+            if (isset($data['shortcode'])) {
+                $table = $wpdb->prefix . 'workedia_pages';
+                $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE slug = %s", $slug));
+                if (!$exists) {
+                    $wpdb->insert($table, array(
+                        'title' => $data['title'],
+                        'slug' => $slug,
+                        'shortcode' => $data['shortcode'],
+                        'instructions' => 'تحرير بيانات هذه الصفحة من إعدادات النظام.',
+                        'settings' => json_encode(['layout' => 'standard'])
+                    ));
+                }
+            }
+        }
+    }
+
+    private static function sync_missing_member_accounts() {
+        global $wpdb;
+        $members = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}workedia_members WHERE wp_user_id IS NULL OR wp_user_id = 0");
+        foreach ($members as $m) {
+            $digits = '';
+            for ($i = 0; $i < 10; $i++) {
+                $digits .= mt_rand(0, 9);
+            }
+            $temp_pass = 'IRS' . $digits;
+            $user_id = wp_insert_user([
+                'user_login' => $m->national_id,
+                'user_email' => $m->email ?: $m->national_id . '@irseg.org',
+                'display_name' => $m->name,
+                'user_pass' => $temp_pass,
+                'role' => 'workedia_member'
+            ]);
+            if (!is_wp_error($user_id)) {
+                update_user_meta($user_id, 'workedia_temp_pass', $temp_pass);
+                if (!empty($m->governorate)) {
+                    update_user_meta($user_id, 'workedia_governorate', $m->governorate);
+                }
+                $wpdb->update("{$wpdb->prefix}workedia_members", ['wp_user_id' => $user_id], ['id' => $m->id]);
+            }
+        }
+    }
+
+    private static function migrate_user_roles() {
+        $role_migration = array(
+            'sm_system_admin'     => 'workedia_system_admin',
+            'sm_syndicate_admin'  => 'workedia_admin',
+            'sm_syndicate_member' => 'workedia_member',
+            'sm_officer'          => 'workedia_admin',
+            'sm_member'           => 'workedia_member',
+            'sm_parent'           => 'workedia_member',
+            'sm_student'          => 'workedia_member'
+        );
+
+        foreach ($role_migration as $old => $new) {
+            $users = get_users(array('role' => $old));
+            if (!empty($users)) {
+                foreach ($users as $user) {
+                    $user->add_role($new);
+                    $user->remove_role($old);
+                }
+            }
+        }
+    }
+}
