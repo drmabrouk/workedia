@@ -1,0 +1,610 @@
+:root {
+    --workedia-primary-color: #F63049;
+    --workedia-secondary-color: #D02752;
+    --workedia-accent-color: #8A244B;
+    --workedia-dark-color: #111F35;
+    --workedia-white-color: #FFFFFF;
+
+    /* Pastel Shades */
+    --workedia-bg-light: #F8FAFC;
+    --workedia-border-color: #E2E8F0;
+    --workedia-text-gray: #718096;
+    --workedia-pastel-red: #FFF5F5;
+    --workedia-pastel-pink: #FFF0F3;
+
+    /* System Globals */
+    --workedia-radius: 12px;
+    --workedia-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.workedia-content-wrapper, .workedia-admin-dashboard, .workedia-container,
+.workedia-content-wrapper *:not(.dashicons), .workedia-admin-dashboard *:not(.dashicons), .workedia-container *:not(.dashicons) {
+    font-family: 'Rubik', sans-serif !important;
+    color: var(--workedia-dark-color);
+}
+
+.workedia-btn, .workedia-btn * {
+    color: white !important;
+}
+
+.workedia-btn-outline, .workedia-btn-outline * {
+    color: var(--workedia-text-gray) !important;
+}
+
+.workedia-content-wrapper input,
+.workedia-content-wrapper select,
+.workedia-content-wrapper textarea,
+.workedia-content-wrapper button,
+.workedia-admin-dashboard input,
+.workedia-admin-dashboard select,
+.workedia-admin-dashboard textarea,
+.workedia-admin-dashboard button,
+.workedia-container input,
+.workedia-container select,
+.workedia-container textarea,
+.workedia-container button {
+    font-family: 'Rubik', sans-serif !important;
+}
+
+/* Unified Table Design */
+.workedia-table-container {
+    background: var(--workedia-white-color);
+    border-radius: var(--workedia-radius);
+    border: 1px solid var(--workedia-border-color);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: var(--workedia-shadow);
+}
+
+.workedia-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: right;
+}
+
+.workedia-table th {
+    background: var(--workedia-bg-light);
+    padding: 15px 20px;
+    font-weight: 700;
+    color: var(--workedia-dark-color);
+    border-bottom: 2px solid var(--workedia-border-color);
+}
+
+.workedia-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--workedia-border-color);
+    vertical-align: middle;
+}
+
+.workedia-table tr:last-child td {
+    border-bottom: none;
+}
+
+.workedia-table tr:hover {
+    background-color: var(--workedia-pastel-red);
+}
+
+/* Unified Button Design */
+.workedia-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    gap: 8px;
+    font-size: 14px;
+    background: var(--workedia-primary-color);
+    color: white;
+    text-decoration: none;
+}
+
+.workedia-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(246, 48, 73, 0.2);
+    color: white;
+}
+
+.workedia-btn-secondary {
+    background: var(--workedia-secondary-color);
+}
+
+.workedia-btn-accent {
+    background: var(--workedia-accent-color);
+}
+
+.workedia-btn-outline {
+    background: transparent;
+    border: 1px solid var(--workedia-border-color);
+    color: var(--workedia-text-gray);
+}
+
+.workedia-btn-outline:hover {
+    background: var(--workedia-bg-light);
+    color: var(--workedia-dark-color);
+}
+
+/* Unified Form Elements */
+.workedia-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--workedia-dark-color);
+    font-size: 14px;
+}
+
+.workedia-input, .workedia-select, .workedia-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--workedia-border-color);
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.workedia-input:focus, .workedia-select:focus, .workedia-textarea:focus {
+    outline: none;
+    border-color: var(--workedia-primary-color);
+    box-shadow: 0 0 0 3px rgba(246, 48, 73, 0.1);
+}
+
+.workedia-form-group {
+    margin-bottom: 20px;
+}
+
+/* Unified Modal Design */
+.workedia-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 31, 53, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.workedia-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: var(--workedia-radius);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.workedia-modal-header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--workedia-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.workedia-modal-header h3 {
+    margin: 0;
+    color: var(--workedia-dark-color);
+    font-weight: 800;
+    border: none;
+    padding: 0;
+}
+
+.workedia-modal-close {
+    background: var(--workedia-bg-light);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--workedia-text-gray);
+    transition: 0.2s;
+}
+
+.workedia-modal-close:hover {
+    color: var(--workedia-primary-color);
+    background: var(--workedia-pastel-red);
+}
+
+/* Status Badges */
+.workedia-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.workedia-badge-low { background: #EBF8FF; color: #3182CE; }
+.workedia-badge-mid { background: #FAF5FF; color: #805AD5; }
+.workedia-badge-medium { background: #FFFAF0; color: #DD6B20; }
+.workedia-badge-high { background: #E6FFFA; color: #319795; }
+.workedia-badge-urgent { background: #FFF5F5; color: #E53E3E; }
+
+/* Dashboard Header */
+.workedia-main-header {
+    background: var(--workedia-bg-light);
+    color: var(--workedia-dark-color);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--workedia-shadow);
+    border-bottom: 1px solid var(--workedia-border-color);
+}
+
+/* Stat Cards */
+.workedia-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+}
+.workedia-stat-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: var(--workedia-radius);
+    border: 1px solid var(--workedia-border-color);
+    box-shadow: var(--workedia-shadow);
+    text-align: center;
+}
+
+/* Tabs */
+.workedia-tabs-wrapper {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--workedia-border-color);
+    padding: 0 10px;
+}
+
+.workedia-tab-btn {
+    padding: 12px 25px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--workedia-text-gray);
+    border-bottom: 3px solid transparent;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.workedia-tab-btn:hover {
+    color: var(--workedia-primary-color);
+    background: var(--workedia-pastel-red);
+}
+
+.workedia-tab-btn.workedia-active {
+    color: var(--workedia-primary-color);
+    border-bottom-color: var(--workedia-primary-color);
+}
+
+.workedia-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    text-decoration: none !important;
+    color: var(--workedia-dark-color) !important;
+    font-size: 13px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+.workedia-dropdown-item:hover { background: var(--workedia-bg-light); color: var(--workedia-primary-color) !important; }
+
+@keyframes workediaFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Actions Dropdown */
+.workedia-actions-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.workedia-actions-trigger {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.2s;
+    color: var(--workedia-dark-color) !important;
+}
+
+.workedia-actions-trigger:hover {
+    background: #e2e8f0;
+}
+
+.workedia-actions-content {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: white;
+    min-width: 160px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    z-index: 10;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.workedia-actions-dropdown:hover .workedia-actions-content {
+    display: block;
+    animation: workediaFadeIn 0.2s ease-out;
+}
+
+.workedia-action-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    font-size: 13px;
+    color: var(--workedia-dark-color) !important;
+    text-decoration: none !important;
+    transition: 0.2s;
+}
+
+.workedia-action-item:hover {
+    background: #f8fafc;
+    color: var(--workedia-primary-color) !important;
+}
+
+.workedia-action-item .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Verification Engine Styles */
+.workedia-verify-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background: #f8fafc;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+}
+.workedia-verify-header { text-align: center; margin-bottom: 40px; }
+.workedia-verify-search-box {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+}
+.workedia-verify-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    animation: workediaFadeIn 0.3s ease-out;
+}
+.workedia-verify-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.workedia-verify-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+.workedia-verify-item label {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 5px;
+}
+.workedia-verify-item span {
+    font-weight: 700;
+}
+.workedia-verify-status-valid { color: #38a169 !important; font-weight: 800 !important; }
+.workedia-verify-status-invalid { color: #e53e3e !important; font-weight: 800 !important; }
+
+.spin { animation: workedia-spin 1s linear infinite; }
+@keyframes workedia-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .workedia-verify-search-box > form > div { grid-template-columns: 1fr !important; }
+}
+
+/* Ticketing System Styles */
+.workedia-tickets-wrapper {
+    margin: 20px 0;
+}
+
+.workedia-ticket-card:hover {
+    border-color: var(--workedia-primary-color) !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+}
+
+.workedia-loader-mini {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--workedia-primary-color);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: workedia-spin 1s linear infinite;
+    display: inline-block;
+}
+
+@media (max-width: 992px) {
+    .workedia-tickets-wrapper { flex-direction: column; }
+    .workedia-tickets-sidebar { width: 100% !important; }
+    .workedia-tickets-sidebar > div { position: static !important; }
+}
+
+#ticket-thread-body::-webkit-scrollbar { width: 6px; }
+#ticket-thread-body::-webkit-scrollbar-track { background: #f1f1f1; }
+#ticket-thread-body::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
+#ticket-thread-body::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+
+/* Digital Service Cards */
+.workedia-service-card {
+    transition: all 0.3s ease;
+}
+.workedia-service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+    border-color: var(--workedia-primary-color) !important;
+}
+.workedia-service-card .workedia-btn {
+    opacity: 0.9;
+}
+.workedia-service-card .workedia-btn:hover {
+    opacity: 1;
+}
+
+/* Public Pages Styling */
+.workedia-public-page {
+    background: #fff;
+    color: var(--workedia-dark-color);
+}
+.workedia-hero-section {
+    background: var(--workedia-dark-color);
+    color: #fff;
+    padding: 100px 20px;
+    text-align: center;
+    border-radius: 0 0 50px 50px;
+}
+.workedia-hero-logo {
+    max-height: 120px;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+}
+.workedia-hero-section h1 {
+    font-size: 3em;
+    font-weight: 900;
+    margin: 0;
+}
+.workedia-hero-subtitle {
+    font-size: 1.2em;
+    opacity: 0.8;
+    margin-top: 15px;
+}
+.workedia-content-container {
+    max-width: 1200px;
+    margin: -50px auto 50px;
+    padding: 0 20px;
+}
+.workedia-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+.workedia-info-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    text-align: center;
+    border: 1px solid #f1f5f9;
+}
+.workedia-info-card .dashicons {
+    font-size: 50px;
+    width: 50px;
+    height: 50px;
+    color: var(--workedia-primary-color);
+    margin-bottom: 20px;
+}
+.workedia-page-header {
+    background: var(--workedia-bg-light);
+    padding: 60px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--workedia-border-color);
+}
+.workedia-page-header h2 {
+    font-size: 2.5em;
+    font-weight: 800;
+    color: var(--workedia-dark-color);
+}
+.workedia-contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 50px;
+    margin-top: 50px;
+}
+.workedia-contact-info {
+    padding: 40px;
+    background: #f8fafc;
+    border-radius: 20px;
+}
+.workedia-blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+.workedia-blog-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: 0.3s;
+}
+.workedia-blog-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+}
+.workedia-blog-image {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
+.workedia-blog-content {
+    padding: 25px;
+}
+.workedia-blog-date {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 700;
+}
+.workedia-blog-content h4 {
+    margin: 10px 0;
+    font-size: 1.2em;
+    font-weight: 800;
+}
+.workedia-read-more {
+    color: var(--workedia-primary-color);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-block;
+    margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .workedia-info-grid, .workedia-contact-grid { grid-template-columns: 1fr; }
+    .workedia-hero-section h1 { font-size: 2em; }
+}
