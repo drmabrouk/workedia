@@ -32,20 +32,11 @@ class Workedia_Admin {
 
         add_submenu_page(
             'workedia-dashboard',
-            'إدارة الأعضاء',
-            'إدارة الأعضاء',
+            'إدارة مستخدمي النظام',
+            'إدارة مستخدمي النظام',
             'manage_options',
-            'workedia-members',
-            array($this, 'display_members')
-        );
-
-        add_submenu_page(
-            'workedia-dashboard',
-            'أعضاء Workedia',
-            'أعضاء Workedia',
-            'manage_options',
-            'workedia-staff',
-            array($this, 'display_staff_page')
+            'workedia-users',
+            array($this, 'display_users_management')
         );
 
         add_submenu_page(
@@ -115,8 +106,6 @@ class Workedia_Admin {
             $info['address'] = sanitize_text_field($_POST['workedia_address']);
             $info['map_link'] = esc_url_raw($_POST['workedia_map_link'] ?? '');
             $info['extra_details'] = sanitize_textarea_field($_POST['workedia_extra_details'] ?? '');
-            $info['authority_name'] = sanitize_text_field($_POST['authority_name'] ?? '');
-            $info['authority_logo'] = esc_url_raw($_POST['authority_logo'] ?? '');
 
             Workedia_Settings::save_workedia_info($info);
 
@@ -161,15 +150,8 @@ class Workedia_Admin {
         include WORKEDIA_PLUGIN_DIR . 'templates/public-admin-panel.php';
     }
 
-    public function display_staff_page() {
-        $_GET['workedia_tab'] = 'advanced-settings';
-        $_GET['sub'] = 'staff';
-        $this->display_settings();
-    }
-
-
-    public function display_members() {
-        $_GET['workedia_tab'] = 'members';
+    public function display_users_management() {
+        $_GET['workedia_tab'] = 'users-management';
         $this->display_settings();
     }
 

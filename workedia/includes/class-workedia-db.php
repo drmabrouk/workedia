@@ -4,7 +4,7 @@ class Workedia_DB {
 
     public static function get_staff($args = array()) {
         $user = wp_get_current_user();
-        $is_administrator = in_array('administrator', (array)$user->roles);
+        $is_full_admin = current_user_can('manage_options');
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $default_args = array(
@@ -13,8 +13,9 @@ class Workedia_DB {
             'offset' => 0
         );
 
-        if ($is_administrator) {
-            $default_args['role'] = 'subscriber'; // Can only see members
+        // If not full admin, restrict to subscribers in their governorate
+        if (!$is_full_admin) {
+            $default_args['role'] = 'subscriber';
             if ($my_gov) {
                 $default_args['meta_query'] = array(
                     array(
@@ -457,9 +458,6 @@ class Workedia_DB {
         return true;
     }
 
-    public static function get_pending_reports_count() {
-        return 0;
-    }
 
 
     public static function add_survey($title, $questions, $recipients, $user_id) {

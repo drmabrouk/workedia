@@ -243,7 +243,7 @@ function deleteMember(id, name) {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            window.location.href = '<?php echo add_query_arg('workedia_tab', 'members'); ?>';
+            window.location.href = '<?php echo add_query_arg('workedia_tab', 'users-management'); ?>';
         } else {
             alert('خطأ: ' + res.data);
         }

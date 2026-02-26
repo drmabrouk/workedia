@@ -563,10 +563,10 @@ $greeting = ($hour >= 5 && $hour < 12) ? 'صباح الخير' : 'مساء ال�
                 <?php endif; ?>
 
                 <?php if (!$is_restricted && ($is_admin || $is_sys_admin || $is_administrator)): ?>
-                    <li class="workedia-sidebar-item <?php echo in_array($active_tab, ['members', 'update-requests']) ? 'workedia-active' : ''; ?>">
-                        <a href="<?php echo add_query_arg('workedia_tab', 'members'); ?>" class="workedia-sidebar-link"><span class="dashicons dashicons-groups"></span> <?php echo $labels['tab_members']; ?></a>
-                        <ul class="workedia-sidebar-dropdown" style="display: <?php echo in_array($active_tab, ['members', 'update-requests']) ? 'block' : 'none'; ?>;">
-                            <li><a href="<?php echo add_query_arg('workedia_tab', 'members'); ?>" class="<?php echo $active_tab == 'members' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-list-view"></span> قائمة الأعضاء</a></li>
+                    <li class="workedia-sidebar-item <?php echo in_array($active_tab, ['users-management', 'update-requests']) ? 'workedia-active' : ''; ?>">
+                        <a href="<?php echo add_query_arg('workedia_tab', 'users-management'); ?>" class="workedia-sidebar-link"><span class="dashicons dashicons-admin-users"></span> <?php echo $labels['tab_users_management']; ?></a>
+                        <ul class="workedia-sidebar-dropdown" style="display: <?php echo in_array($active_tab, ['users-management', 'update-requests']) ? 'block' : 'none'; ?>;">
+                            <li><a href="<?php echo add_query_arg('workedia_tab', 'users-management'); ?>" class="<?php echo $active_tab == 'users-management' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-list-view"></span> قائمة المستخدمين</a></li>
                             <li><a href="<?php echo add_query_arg('workedia_tab', 'update-requests'); ?>" class="<?php echo $active_tab == 'update-requests' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-edit"></span> طلبات التحديث</a></li>
                         </ul>
                     </li>
@@ -595,12 +595,11 @@ $greeting = ($hour >= 5 && $hour < 12) ? 'صباح الخير' : 'مساء ال�
 
                 <?php if ($is_admin || $is_sys_admin): ?>
                     <li class="workedia-sidebar-item <?php echo $active_tab == 'advanced-settings' ? 'workedia-active' : ''; ?>">
-                        <a href="<?php echo add_query_arg('workedia_tab', 'advanced-settings'); ?>" class="workedia-sidebar-link" style="color: #c53030 !important;"><span class="dashicons dashicons-shield-alt"></span> الإعدادات المتقدمة</a>
+                        <a href="<?php echo add_query_arg(['workedia_tab' => 'advanced-settings', 'sub' => 'alerts']); ?>" class="workedia-sidebar-link" style="color: #c53030 !important;"><span class="dashicons dashicons-shield-alt"></span> الإعدادات المتقدمة</a>
                         <ul class="workedia-sidebar-dropdown" style="display: <?php echo $active_tab == 'advanced-settings' ? 'block' : 'none'; ?>;">
-                            <li><a href="<?php echo add_query_arg('workedia_tab', 'advanced-settings'); ?>&sub=staff" class="<?php echo (!isset($_GET['sub']) || $_GET['sub'] == 'staff') ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-admin-users"></span> إدارة مستخدمي النظام</a></li>
-                            <li><a href="<?php echo add_query_arg('workedia_tab', 'advanced-settings'); ?>&sub=alerts" class="<?php echo ($_GET['sub'] ?? '') == 'alerts' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-megaphone"></span> تنبيهات النظام (System Alerts)</a></li>
-                            <li><a href="<?php echo add_query_arg('workedia_tab', 'advanced-settings'); ?>&sub=backup" class="<?php echo ($_GET['sub'] ?? '') == 'backup' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-database-export"></span> مركز النسخ الاحتياطي</a></li>
-                            <li><a href="<?php echo add_query_arg('workedia_tab', 'advanced-settings'); ?>&sub=logs" class="<?php echo ($_GET['sub'] ?? '') == 'logs' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-list-view"></span> سجل النشاطات (Activity Log)</a></li>
+                            <li><a href="<?php echo add_query_arg(['workedia_tab' => 'advanced-settings', 'sub' => 'alerts']); ?>" class="<?php echo ($_GET['sub'] ?? '') == 'alerts' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-megaphone"></span> تنبيهات النظام (System Alerts)</a></li>
+                            <li><a href="<?php echo add_query_arg(['workedia_tab' => 'advanced-settings', 'sub' => 'backup']); ?>" class="<?php echo ($_GET['sub'] ?? '') == 'backup' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-database-export"></span> مركز النسخ الاحتياطي</a></li>
+                            <li><a href="<?php echo add_query_arg(['workedia_tab' => 'advanced-settings', 'sub' => 'logs']); ?>" class="<?php echo ($_GET['sub'] ?? '') == 'logs' ? 'workedia-sub-active' : ''; ?>"><span class="dashicons dashicons-list-view"></span> سجل النشاطات (Activity Log)</a></li>
                         </ul>
                     </li>
                 <?php endif; ?>
@@ -616,10 +615,9 @@ $greeting = ($hour >= 5 && $hour < 12) ? 'صباح الخير' : 'مساء ال�
                     include WORKEDIA_PLUGIN_DIR . 'templates/public-dashboard-summary.php';
                     break;
 
-                case 'members':
+                case 'users-management':
                     if ($is_admin || current_user_can('manage_options')) {
-                        echo '<h3 style="margin-top:0;">إدارة الأعضاء</h3>';
-                        include WORKEDIA_PLUGIN_DIR . 'templates/admin-members.php';
+                        include WORKEDIA_PLUGIN_DIR . 'templates/admin-users-management.php';
                     }
                     break;
 
@@ -653,11 +651,10 @@ $greeting = ($hour >= 5 && $hour < 12) ? 'صباح الخير' : 'مساء ال�
 
                 case 'advanced-settings':
                     if ($is_admin || $is_sys_admin) {
-                        $sub = $_GET['sub'] ?? 'staff';
+                        $sub = $_GET['sub'] ?? 'alerts';
                         ?>
                         <div class="workedia-tabs-wrapper" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; overflow-x: auto; white-space: nowrap; padding-bottom: 10px;">
                             <button class="workedia-tab-btn <?php echo ($sub == 'alerts') ? 'workedia-active' : ''; ?>" onclick="workediaOpenInternalTab('system-alerts-settings', this)">تنبيهات النظام</button>
-                            <button class="workedia-tab-btn <?php echo ($sub == 'staff') ? 'workedia-active' : ''; ?>" onclick="workediaOpenInternalTab('system-users-settings', this)">إدارة مستخدمي النظام</button>
                             <button class="workedia-tab-btn <?php echo ($sub == 'backup') ? 'workedia-active' : ''; ?>" onclick="workediaOpenInternalTab('backup-settings', this)">مركز النسخ الاحتياطي</button>
                             <button class="workedia-tab-btn <?php echo ($sub == 'logs') ? 'workedia-active' : ''; ?>" onclick="workediaOpenInternalTab('activity-logs', this)">سجل النشاطات</button>
                         </div>
@@ -720,9 +717,6 @@ $greeting = ($hour >= 5 && $hour < 12) ? 'صباح الخير' : 'مساء ال�
                             </div>
                         </div>
 
-                        <div id="system-users-settings" class="workedia-internal-tab" style="display: <?php echo ($sub == 'staff') ? 'block' : 'none'; ?>;">
-                            <?php include WORKEDIA_PLUGIN_DIR . 'templates/admin-staff.php'; ?>
-                        </div>
 
                         <div id="backup-settings" class="workedia-internal-tab" style="display: <?php echo ($sub == 'backup') ? 'block' : 'none'; ?>;">
                             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:30px;">
@@ -889,25 +883,6 @@ $greeting = ($hour >= 5 && $hour < 12) ? 'صباح الخير' : 'مساء ال�
 
                                 <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: var(--workedia-shadow);">
                                     <h4 style="margin-top:0; border-bottom:2px solid #f1f5f9; padding-bottom:12px; color: var(--workedia-dark-color); display: flex; align-items: center; gap: 10px;">
-                                        <span class="dashicons dashicons-building"></span> بيانات السلطة العليا (Authority Data)
-                                    </h4>
-                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:15px;">
-                                        <div class="workedia-form-group">
-                                            <label class="workedia-label">اسم السلطة المشرفة:</label>
-                                            <input type="text" name="authority_name" value="<?php echo esc_attr($workedia['authority_name'] ?? ''); ?>" class="workedia-input" placeholder="مثال: وزارة الشباب والرياضة">
-                                        </div>
-                                        <div class="workedia-form-group">
-                                            <label class="workedia-label">شعار السلطة:</label>
-                                            <div style="display:flex; gap:10px;">
-                                                <input type="text" name="authority_logo" id="workedia_authority_logo_url" value="<?php echo esc_attr($workedia['authority_logo'] ?? ''); ?>" class="workedia-input">
-                                                <button type="button" onclick="workediaOpenMediaUploader('workedia_authority_logo_url')" class="workedia-btn" style="width:auto; font-size:12px; background:#4a5568;">اختيار</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: var(--workedia-shadow);">
-                                    <h4 style="margin-top:0; border-bottom:2px solid #f1f5f9; padding-bottom:12px; color: var(--workedia-dark-color); display: flex; align-items: center; gap: 10px;">
                                         <span class="dashicons dashicons-groups"></span> بيانات Workedia (Union Data)
                                     </h4>
                                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:15px;">
@@ -949,9 +924,6 @@ $greeting = ($hour >= 5 && $hour < 12) ? 'صباح الخير' : 'مساء ال�
                         </div>
 
 
-                        <div id="notification-settings" class="workedia-internal-tab" style="display: <?php echo ($sub == 'notifications') ? 'block' : 'none'; ?>;">
-                            <?php include WORKEDIA_PLUGIN_DIR . 'templates/admin-notifications.php'; ?>
-                        </div>
 
                         <div id="page-customization" class="workedia-internal-tab" style="display: <?php echo $sub == 'pages' ? 'block' : 'none'; ?>;">
                             <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 25px;">

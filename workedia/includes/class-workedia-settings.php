@@ -26,8 +26,7 @@ class Workedia_Settings {
     public static function get_labels() {
         $default = array(
             'tab_summary' => 'لوحة المعلومات',
-            'tab_members' => 'إدارة الأعضاء',
-            'tab_staffs' => 'إدارة مستخدمي النظام',
+            'tab_users_management' => 'إدارة مستخدمي النظام',
             'tab_surveys' => 'استطلاعات الرأي',
             'tab_global_settings' => 'إعدادات النظام',
             'tab_update_requests' => 'طلبات التحديث',
@@ -60,13 +59,11 @@ class Workedia_Settings {
 
     public static function get_workedia_info() {
         $default = array(
-            'workedia_name' => 'نقابتي النموذجية',
-            'workedia_officer_name' => 'أحمد علي',
+            'workedia_name' => 'Workedia',
+            'workedia_officer_name' => 'Admin',
             'workedia_logo' => '',
-            'authority_name' => '',
-            'authority_logo' => '',
-            'address' => 'الرياض، المملكة العربية السعودية',
-            'email' => 'info@workedia.edu',
+            'address' => 'Cairo, Egypt',
+            'email' => 'info@workedia.com',
             'phone' => '0123456789',
             'website_url' => '',
             'map_link' => '',

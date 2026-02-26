@@ -579,7 +579,8 @@ class Workedia_Public {
     }
 
     public function ajax_add_staff() {
-        if (!current_user_can('manage_options') && !current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+        global $wpdb;
+        if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
         if (!wp_verify_nonce($_POST['workedia_nonce'], 'workediaMemberAction')) wp_send_json_error('Security check failed');
 
         $username = sanitize_user($_POST['user_login']);
@@ -595,76 +596,73 @@ class Workedia_Public {
         if (username_exists($username)) wp_send_json_error('اسم المستخدم موجود مسبقاً');
         if (email_exists($email)) wp_send_json_error('البريد الإلكتروني مسجل لمستخدم آخر');
 
-        if (!empty($_POST['user_pass'])) {
-            $pass = $_POST['user_pass'];
-        } else {
-            $digits = '';
-            for ($i = 0; $i < 10; $i++) {
-                $digits .= mt_rand(0, 9);
-            }
-            $pass = 'IRS' . $digits;
-        }
+        $pass = !empty($_POST['user_pass']) ? $_POST['user_pass'] : 'IRS' . sprintf("%010d", mt_rand(0, 9999999999));
 
         // Prevent role escalation
-        if ($role === 'administrator' && !current_user_can('manage_options') && !current_user_can('manage_options')) {
+        if ($role === 'administrator' && !current_user_can('manage_options')) {
             wp_send_json_error('Insufficient permissions to assign this role');
         }
 
-        $user_id = wp_insert_user(array(
-            'user_login' => $username,
-            'user_email' => $email,
-            'display_name' => $display_name,
-            'user_pass' => $pass,
-            'role' => $role
-        ));
-
-        if (is_wp_error($user_id)) wp_send_json_error($user_id->get_error_message());
-
-        update_user_meta($user_id, 'workedia_temp_pass', $pass);
-        update_user_meta($user_id, 'workediaMemberIdAttr', sanitize_text_field($_POST['officer_id']));
-        update_user_meta($user_id, 'workedia_phone', sanitize_text_field($_POST['phone']));
-        update_user_meta($user_id, 'workedia_account_status', 'active');
-
-        $gov = sanitize_text_field($_POST['governorate'] ?? '');
-        if (in_array('administrator', (array)wp_get_current_user()->roles)) {
-            $gov = get_user_meta(get_current_user_id(), 'workedia_governorate', true);
-        }
-        update_user_meta($user_id, 'workedia_governorate', $gov);
-
-        // If role is member, ensure entry in workedia_members table for sync
         if ($role === 'subscriber') {
-            global $wpdb;
-            $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}workedia_members WHERE national_id = %s OR wp_user_id = %d", $_POST['officer_id'], $user_id));
-            if (!$exists) {
-                Workedia_DB::add_member([
-                    'national_id' => sanitize_text_field($_POST['officer_id']),
-                    'name' => sanitize_text_field($_POST['display_name']),
-                    'email' => $email,
-                    'phone' => sanitize_text_field($_POST['phone']),
-                    'governorate' => $gov,
-                    'wp_user_id' => $user_id
-                ]);
-            }
+            // Unified Add for Member
+            $member_data = [
+                'national_id' => sanitize_text_field($_POST['officer_id'] ?: $username),
+                'name' => $display_name,
+                'email' => $email,
+                'phone' => sanitize_text_field($_POST['phone']),
+                'governorate' => sanitize_text_field($_POST['governorate']),
+                'membership_number' => sanitize_text_field($_POST['membership_number'] ?? ''),
+                'membership_status' => sanitize_text_field($_POST['membership_status'] ?? 'active')
+            ];
+            // Workedia_DB::add_member handles WP User creation too.
+            // But we already checked for exists.
+            $res = Workedia_DB::add_member($member_data);
+            if (is_wp_error($res)) wp_send_json_error($res->get_error_message());
+            $user_id = $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$wpdb->prefix}workedia_members WHERE id = %d", $res));
+        } else {
+            // Standard Staff
+            $user_id = wp_insert_user(array(
+                'user_login' => $username,
+                'user_email' => $email,
+                'display_name' => $display_name,
+                'user_pass' => $pass,
+                'role' => $role
+            ));
+            if (is_wp_error($user_id)) wp_send_json_error($user_id->get_error_message());
+
+            update_user_meta($user_id, 'workedia_temp_pass', $pass);
+            update_user_meta($user_id, 'workediaMemberIdAttr', sanitize_text_field($_POST['officer_id']));
+            update_user_meta($user_id, 'workedia_phone', sanitize_text_field($_POST['phone']));
+            update_user_meta($user_id, 'workedia_account_status', 'active');
+            update_user_meta($user_id, 'workedia_governorate', sanitize_text_field($_POST['governorate']));
         }
 
-        Workedia_Logger::log('إضافة مستخدم', "الاسم: {$_POST['display_name']} الرتبة: $role");
+        Workedia_Logger::log('إضافة مستخدم (موحد)', "الاسم: $display_name الدور: $role");
         wp_send_json_success($user_id);
     }
 
     public function ajax_delete_staff() {
-        if (!current_user_can('manage_options') && !current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+        if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
         if (!wp_verify_nonce($_POST['nonce'], 'workediaMemberAction')) wp_send_json_error('Security check failed');
 
         $user_id = intval($_POST['user_id']);
         if ($user_id === get_current_user_id()) wp_send_json_error('Cannot delete yourself');
         if (!$this->can_manage_user($user_id)) wp_send_json_error('Access denied');
 
-        wp_delete_user($user_id);
+        // Check if it's a member
+        global $wpdb;
+        $member_id = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}workedia_members WHERE wp_user_id = %d", $user_id));
+        if ($member_id) {
+            Workedia_DB::delete_member($member_id);
+        } else {
+            wp_delete_user($user_id);
+        }
+
         wp_send_json_success('Deleted');
     }
 
     public function ajax_update_staff() {
-        if (!current_user_can('manage_options') && !current_user_can('manage_options')) wp_send_json_error('Unauthorized');
+        if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
         if (!wp_verify_nonce($_POST['workedia_nonce'], 'workediaMemberAction')) wp_send_json_error('Security check failed');
 
         $user_id = intval($_POST['edit_officer_id']);
@@ -673,7 +671,7 @@ class Workedia_Public {
         $role = sanitize_text_field($_POST['role']);
 
         // Prevent role escalation
-        if ($role === 'administrator' && !current_user_can('manage_options') && !current_user_can('manage_options')) {
+        if ($role === 'administrator' && !current_user_can('manage_options')) {
             wp_send_json_error('Insufficient permissions to assign this role');
         }
 
@@ -691,11 +689,11 @@ class Workedia_Public {
         update_user_meta($user_id, 'workedia_phone', sanitize_text_field($_POST['phone']));
 
         $gov = sanitize_text_field($_POST['governorate'] ?? '');
-        if (!in_array('administrator', (array)wp_get_current_user()->roles)) {
-            if (isset($_POST['governorate'])) {
-                update_user_meta($user_id, 'workedia_governorate', $gov);
-            }
+        if (current_user_can('manage_options')) {
+            // Full admins can update governorate
+            update_user_meta($user_id, 'workedia_governorate', $gov);
         } else {
+            // Local admins can't change governorate (keep current)
             $gov = get_user_meta($user_id, 'workedia_governorate', true);
         }
 
@@ -712,7 +710,7 @@ class Workedia_Public {
             ], ['wp_user_id' => $user_id]);
         }
 
-        Workedia_Logger::log('تحديث مستخدم', "الاسم: {$_POST['display_name']}");
+        Workedia_Logger::log('تحديث مستخدم (موحد)', "الاسم: {$_POST['display_name']}");
         wp_send_json_success('Updated');
     }
 
@@ -1097,31 +1095,6 @@ class Workedia_Public {
                     ];
                 }
                 break;
-            case 'license':
-                $member = Workedia_DB::get_member_by_facility_number($val);
-                if ($member) {
-                    $results['license'] = [
-                        'label' => 'رخصة المنشأة',
-                        'facility_name' => $member->facility_name,
-                        'number' => $member->facility_number,
-                        'category' => $member->facility_category,
-                        'expiry' => $member->facility_license_expiration_date,
-                        'address' => $member->facility_address
-                    ];
-                }
-                break;
-            case 'practice':
-                $member = Workedia_DB::get_member_by_license_number($val);
-                if ($member) {
-                    $results['practice'] = [
-                        'label' => 'تصريح مزاولة المهنة',
-                        'name' => $member->name,
-                        'number' => $member->license_number,
-                        'issue_date' => $member->license_issue_date,
-                        'expiry' => $member->license_expiration_date
-                    ];
-                }
-                break;
             default: // 'all' - National ID or Username
                 if (preg_match('/^[0-9]{14}$/', $val)) {
                     $member = Workedia_DB::get_member_by_national_id($val);
@@ -1137,25 +1110,6 @@ class Workedia_Public {
                         'status' => $member->membership_status,
                         'expiry' => $member->membership_expiration_date
                     ];
-                    if ($member->facility_number) {
-                        $results['license'] = [
-                            'label' => 'رخصة المنشأة',
-                            'facility_name' => $member->facility_name,
-                            'number' => $member->facility_number,
-                            'category' => $member->facility_category,
-                            'expiry' => $member->facility_license_expiration_date,
-                            'address' => $member->facility_address
-                        ];
-                    }
-                    if ($member->license_number) {
-                        $results['practice'] = [
-                            'label' => 'تصريح مزاولة المهنة',
-                            'name' => $member->name,
-                            'number' => $member->license_number,
-                            'issue_date' => $member->license_issue_date,
-                            'expiry' => $member->license_expiration_date
-                        ];
-                    }
                 }
                 break;
         }
@@ -1263,8 +1217,6 @@ class Workedia_Public {
             $info['address'] = sanitize_text_field($_POST['workedia_address']);
             $info['map_link'] = esc_url_raw($_POST['workedia_map_link'] ?? '');
             $info['extra_details'] = sanitize_textarea_field($_POST['workedia_extra_details'] ?? '');
-            $info['authority_name'] = sanitize_text_field($_POST['authority_name'] ?? '');
-            $info['authority_logo'] = esc_url_raw($_POST['authority_logo'] ?? '');
 
             Workedia_Settings::save_workedia_info($info);
 
@@ -1319,7 +1271,7 @@ class Workedia_Public {
         fclose($handle);
 
         set_transient('workedia_import_results_' . get_current_user_id(), $results, 3600);
-        wp_redirect(add_query_arg('workedia_tab', 'members', wp_get_referer()));
+        wp_redirect(add_query_arg('workedia_tab', 'users-management', wp_get_referer()));
         exit;
     }
 
@@ -1344,15 +1296,8 @@ class Workedia_Public {
             $officer_id = sanitize_text_field($data[3]);
             $role_label = sanitize_text_field($data[4] ?? 'عضو Workedia');
             $phone = sanitize_text_field($data[5] ?? '');
-            if (!empty($data[6])) {
-                $pass = $data[6];
-            } else {
-                $digits = '';
-                for ($i = 0; $i < 10; $i++) {
-                    $digits .= mt_rand(0, 9);
-                }
-                $pass = 'IRS' . $digits;
-            }
+
+            $pass = !empty($data[6]) ? $data[6] : 'IRS' . sprintf("%010d", mt_rand(0, 9999999999));
 
             $role = 'subscriber';
             if (strpos($role_label, 'مدير') !== false) $role = 'administrator';
@@ -1370,21 +1315,24 @@ class Workedia_Public {
                 update_user_meta($user_id, 'workedia_temp_pass', $pass);
                 update_user_meta($user_id, 'workediaMemberIdAttr', $officer_id);
                 update_user_meta($user_id, 'workedia_phone', $phone);
+                // If it's a subscriber/member, ensure it's in members table too
+                if ($role === 'subscriber') {
+                    Workedia_DB::add_member([
+                        'national_id' => $officer_id ?: $username,
+                        'name' => $name,
+                        'email' => $email ?: $username . '@irseg.org',
+                        'phone' => $phone,
+                        'wp_user_id' => $user_id
+                    ]);
+                }
             }
         }
         fclose($handle);
 
-        wp_redirect(add_query_arg('workedia_tab', 'staff', wp_get_referer()));
+        wp_redirect(add_query_arg('workedia_tab', 'users-management', wp_get_referer()));
         exit;
     }
 
-    public function ajax_get_counts() {
-        if (!is_user_logged_in()) wp_send_json_error('Unauthorized');
-        $stats = Workedia_DB::get_statistics();
-        wp_send_json_success([
-            'pending_reports' => Workedia_DB::get_pending_reports_count()
-        ]);
-    }
 
     public function ajax_bulk_delete_users() {
         if (!current_user_can('manage_options')) wp_send_json_error('Unauthorized');
