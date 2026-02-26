@@ -67,7 +67,6 @@
                 </div>
                 <div class="info">
                     <p><strong>العضو:</strong> <?php echo esc_html($s->name); ?></p>
-                    <p><strong>الدرجة:</strong> <?php echo esc_html(Workedia_Settings::get_professional_grades()[$s->professional_grade] ?? $s->professional_grade); ?></p>
                     <p><strong>القومي:</strong> <?php echo esc_html($s->national_id); ?></p>
                 </div>
                 <div class="barcode">

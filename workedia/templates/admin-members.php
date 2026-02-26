@@ -34,33 +34,13 @@ if ($import_results) {
     <?php endif; ?>
 
     <div style="background: white; padding: 30px; border: 1px solid var(--workedia-border-color); border-radius: var(--workedia-radius); margin-bottom: 30px; box-shadow: var(--workedia-shadow);">
-        <form method="get" style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
+        <form method="get" style="display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: end;">
             <input type="hidden" name="page" value="<?php echo esc_attr($_GET['page'] ?? ''); ?>">
             <input type="hidden" name="workedia_tab" value="members">
 
             <div class="workedia-form-group" style="margin-bottom:0;">
                 <label class="workedia-label">بحث:</label>
                 <input type="text" name="member_search" class="workedia-input" value="<?php echo esc_attr(isset($_GET['member_search']) ? $_GET['member_search'] : ''); ?>" placeholder="الاسم، الرقم القومي، رقم العضوية...">
-            </div>
-
-            <div class="workedia-form-group" style="margin-bottom:0;">
-                <label class="workedia-label">الدرجة الوظيفية:</label>
-                <select name="grade_filter" class="workedia-select">
-                    <option value="">كل الدرجات</option>
-                    <?php foreach (Workedia_Settings::get_professional_grades() as $k => $v): ?>
-                        <option value="<?php echo esc_attr($k); ?>" <?php selected(isset($_GET['grade_filter']) && $_GET['grade_filter'] == $k); ?>><?php echo esc_html($v); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="workedia-form-group" style="margin-bottom:0;">
-                <label class="workedia-label">التخصص:</label>
-                <select name="spec_filter" class="workedia-select">
-                    <option value="">كل التخصصات</option>
-                    <?php foreach (Workedia_Settings::get_specializations() as $k => $v): ?>
-                        <option value="<?php echo esc_attr($k); ?>" <?php selected(isset($_GET['spec_filter']) && $_GET['spec_filter'] == $k); ?>><?php echo esc_html($v); ?></option>
-                    <?php endforeach; ?>
-                </select>
             </div>
 
             <div style="display: flex; gap: 10px;">
@@ -80,7 +60,7 @@ if ($import_results) {
     <!-- CSV Import Form -->
     <div id="csv-import-form" style="display:none; background: #f8fafc; padding: 30px; border: 2px dashed #cbd5e0; border-radius: 12px; margin-bottom: 30px;">
         <h3 style="margin-top:0; color:var(--workedia-secondary-color);">استيراد الأعضاء من ملف CSV / Excel</h3>
-        <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">تأكد من أن الملف يحتوي على الأعمدة التالية بالترتيب: (الرقم القومي، الاسم، الدرجة الوظيفية، التخصص، المحافظة، رقم الهاتف، البريد الإلكتروني)</p>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">تأكد من أن الملف يحتوي على الأعمدة التالية بالترتيب: (الرقم القومي، الاسم، المحافظة، رقم الهاتف، البريد الإلكتروني)</p>
 
         <form method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('workedia_admin_action', 'workedia_admin_nonce'); ?>
@@ -101,10 +81,7 @@ if ($import_results) {
                     <th style="width: 40px;"><input type="checkbox" id="select-all-members" onclick="toggleAllMembers(this)"></th>
                     <th>الرقم القومي</th>
                     <th>الاسم</th>
-                    <th>الدرجة الوظيفية</th>
-                    <th>التخصص</th>
                     <th>رقم العضوية</th>
-                    <th>المبلغ المستحق</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
@@ -115,28 +92,20 @@ if ($import_results) {
                 $offset = ($current_page - 1) * $limit;
                 $members = Workedia_DB::get_members(array(
                     'search' => $_GET['member_search'] ?? '',
-                    'professional_grade' => $_GET['grade_filter'] ?? '',
-                    'specialization' => $_GET['spec_filter'] ?? '',
                     'limit' => $limit,
                     'offset' => $offset
                 ));
                 if (empty($members)): ?>
-                    <tr><td colspan="9" style="padding: 60px; text-align: center;">لا يوجد أعضاء يطابقون البحث.</td></tr>
+                    <tr><td colspan="6" style="padding: 60px; text-align: center;">لا يوجد أعضاء يطابقون البحث.</td></tr>
                 <?php else:
-                    $grades = Workedia_Settings::get_professional_grades();
-                    $specs = Workedia_Settings::get_specializations();
                     $statuses = Workedia_Settings::get_membership_statuses();
                     foreach ($members as $member):
-                        $finance = Workedia_Finance::calculate_member_dues($member->id);
                     ?>
                         <tr id="member-row-<?php echo $member->id; ?>">
                             <td><input type="checkbox" class="member-checkbox" value="<?php echo $member->id; ?>"></td>
                             <td style="font-weight: 700; color: var(--workedia-primary-color);"><?php echo esc_html($member->national_id); ?></td>
                             <td style="font-weight: 800;"><?php echo esc_html($member->name); ?></td>
-                            <td><?php echo esc_html($grades[$member->professional_grade] ?? $member->professional_grade); ?></td>
-                            <td><?php echo esc_html($specs[$member->specialization] ?? $member->specialization); ?></td>
                             <td><?php echo esc_html($member->membership_number); ?></td>
-                            <td style="font-weight:700; color:<?php echo $finance['balance'] > 0 ? '#e53e3e' : '#38a169'; ?>;"><?php echo number_format($finance['balance'], 2); ?></td>
                             <td>
                                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                     <a href="<?php echo add_query_arg('workedia_tab', 'member-profile'); ?>&member_id=<?php echo $member->id; ?>" class="workedia-btn workedia-btn-outline" style="padding: 5px 12px; font-size: 12px; height: 32px; text-decoration:none; display:flex; align-items:center;">عرض</a>
@@ -174,12 +143,9 @@ if ($import_results) {
             <div class="workedia-modal-header"><h3>تسجيل عضو جديد</h3><button class="workedia-modal-close" onclick="document.getElementById('add-single-member-modal').style.display='none'">&times;</button></div>
             <form id="add-member-form">
                 <?php wp_nonce_field('workedia_add_member', 'workedia_nonce'); ?>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding:20px;">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding:20px;">
                     <div class="workedia-form-group"><label class="workedia-label">الرقم القومي:</label><input name="national_id" type="text" class="workedia-input" required maxlength="14"></div>
                     <div class="workedia-form-group"><label class="workedia-label">الاسم الكامل:</label><input name="name" type="text" class="workedia-input" required></div>
-                    <div class="workedia-form-group"><label class="workedia-label">الدرجة الوظيفية:</label><select name="professional_grade" class="workedia-select"><?php foreach (Workedia_Settings::get_professional_grades() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
-                    <div class="workedia-form-group"><label class="workedia-label">التخصص:</label><select name="specialization" class="workedia-select"><?php foreach (Workedia_Settings::get_specializations() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
-                    <div class="workedia-form-group"><label class="workedia-label">المؤهل العلمي:</label><select name="academic_degree" class="workedia-select"><?php foreach (Workedia_Settings::get_academic_degrees() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">المحافظة:</label><select name="governorate" class="workedia-select"><option value="">-- اختر المحافظة --</option><?php foreach (Workedia_Settings::get_governorates() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">رقم العضوية:</label><input name="membership_number" type="text" class="workedia-input"></div>
                     <div class="workedia-form-group"><label class="workedia-label">تاريخ بدء العضوية:</label><input name="membership_start_date" id="add_mem_start" type="date" class="workedia-input" onchange="workediaCalculateDateExpiry('add_mem_start', 'add_mem_expiry')"></div>
@@ -196,11 +162,8 @@ if ($import_results) {
             <form id="edit-member-form">
                 <?php wp_nonce_field('workedia_add_member', 'workedia_nonce'); ?>
                 <input type="hidden" name="member_id" id="edit_member_id_hidden">
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding:20px;">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding:20px;">
                     <div class="workedia-form-group"><label class="workedia-label">الاسم الكامل:</label><input name="name" id="edit_name" type="text" class="workedia-input" required></div>
-                    <div class="workedia-form-group"><label class="workedia-label">الدرجة الوظيفية:</label><select name="professional_grade" id="edit_grade" class="workedia-select"><?php foreach (Workedia_Settings::get_professional_grades() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
-                    <div class="workedia-form-group"><label class="workedia-label">التخصص:</label><select name="specialization" id="edit_spec" class="workedia-select"><?php foreach (Workedia_Settings::get_specializations() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
-                    <div class="workedia-form-group"><label class="workedia-label">المؤهل العلمي:</label><select name="academic_degree" id="edit_degree" class="workedia-select"><?php foreach (Workedia_Settings::get_academic_degrees() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">المحافظة:</label><select name="governorate" id="edit_gov" class="workedia-select"><?php foreach (Workedia_Settings::get_governorates() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">تاريخ بدء العضوية:</label><input name="membership_start_date" id="edit_mem_start_input" type="date" class="workedia-input" onchange="workediaCalculateDateExpiry('edit_mem_start_input', 'edit_mem_expiry_input')"></div>
                     <div class="workedia-form-group"><label class="workedia-label">تاريخ انتهاء العضوية:</label><input name="membership_expiration_date" id="edit_mem_expiry_input" type="date" class="workedia-input"></div>
@@ -263,9 +226,6 @@ if ($import_results) {
         window.workediaEditMember = function(s) {
             document.getElementById('edit_member_id_hidden').value = s.id;
             document.getElementById('edit_name').value = s.name;
-            document.getElementById('edit_grade').value = s.professional_grade;
-            document.getElementById('edit_spec').value = s.specialization;
-            document.getElementById('edit_degree').value = s.academic_degree;
             document.getElementById('edit_gov').value = s.governorate;
             document.getElementById('edit_mem_start_input').value = s.membership_start_date;
             document.getElementById('edit_mem_expiry_input').value = s.membership_expiration_date;

@@ -27,12 +27,7 @@ class Workedia_Settings {
         $default = array(
             'tab_summary' => 'لوحة المعلومات',
             'tab_members' => 'إدارة الأعضاء',
-            'tab_finance' => 'الاستحقاقات المالية',
-            'tab_financial_logs' => 'سجل العمليات المالية',
-            'tab_practice_licenses' => 'تصاريح المزاولة (Permits)',
-            'tab_facility_licenses' => 'تسجيل المنشآت',
             'tab_staffs' => 'إدارة مستخدمي النظام',
-            'tab_printing' => 'مركز الطباعة والنشر الرقمي',
             'tab_surveys' => 'استطلاعات الرأي',
             'tab_global_settings' => 'إعدادات النظام',
             'tab_update_requests' => 'طلبات التحديث',
@@ -84,19 +79,6 @@ class Workedia_Settings {
         update_option('workedia_info', $data);
     }
 
-    public static function format_grade_name($grade, $section = '', $format = 'full') {
-        if (empty($grade)) return '---';
-        $grade_num = str_replace('الدرجة المهنية ', '', $grade);
-        if ($format === 'short') {
-            return trim($grade_num . ' ' . $section);
-        }
-        $output = 'الدرجة المهنية ' . $grade_num;
-        if (!empty($section)) {
-            $output .= ' شعبة ' . $section;
-        }
-        return $output;
-    }
-
     public static function get_retention_settings() {
         $default = array(
             'message_retention_days' => 90
@@ -124,41 +106,6 @@ class Workedia_Settings {
     }
 
 
-    public static function get_professional_grades() {
-        $default = array(
-            'assistant_specialist' => 'أخصائي مساعد',
-            'specialist' => 'أخصائي',
-            'consultant' => 'استشاري',
-            'expert' => 'خبير'
-        );
-        return get_option('workedia_professional_grades', $default);
-    }
-
-    public static function save_professional_grades($grades) {
-        update_option('workedia_professional_grades', $grades);
-    }
-
-    public static function get_specializations() {
-        $default = array(
-            'injuries' => 'إصابات وتأهيل',
-            'massage' => 'تدليك رياضي',
-            'nutrition' => 'تغذية رياضية',
-            'special_needs' => 'تأهيل ذوي الاحتياجات الخاصة'
-        );
-        return get_option('workedia_specializations', $default);
-    }
-
-    public static function save_specializations($specs) {
-        update_option('workedia_specializations', $specs);
-    }
-
-    public static function get_academic_degrees() {
-        return array(
-            'bachelor' => 'بكالوريوس',
-            'master' => 'ماجستير',
-            'doctorate' => 'دكتوراه'
-        );
-    }
 
     public static function get_membership_statuses() {
         return array(
@@ -234,22 +181,4 @@ class Workedia_Settings {
         return $prefixes[$gov_key] ?? 'GEN';
     }
 
-    public static function get_finance_settings() {
-        $default = array(
-            'membership_new' => 480,
-            'membership_renewal' => 280,
-            'membership_penalty' => 50,
-            'license_new' => 2500,
-            'license_renewal' => 1000,
-            'license_penalty' => 500,
-            'facility_a' => 9000,
-            'facility_b' => 6000,
-            'facility_c' => 3000
-        );
-        return get_option('workedia_finance_settings', $default);
-    }
-
-    public static function save_finance_settings($settings) {
-        update_option('workedia_finance_settings', $settings);
-    }
 }

@@ -126,72 +126,25 @@ class Workedia_Notifications {
     }
 
     public static function run_daily_checks() {
-        self::check_membership_renewals();
-        self::check_license_expirations();
-        self::check_payment_dues();
+        self::check_membership_expirations();
     }
 
-    private static function check_membership_renewals() {
+    private static function check_membership_expirations() {
         $template = self::get_template('membership_renewal');
         if (!$template || !$template->is_enabled) return;
 
         global $wpdb;
-        $current_year = date('Y');
-        // Members who haven't paid for current year
+        $days = $template->days_before;
+        $target_date = date('Y-m-d', strtotime("+$days days"));
+
         $members = $wpdb->get_results($wpdb->prepare(
-            "SELECT id FROM {$wpdb->prefix}workedia_members WHERE last_paid_membership_year < %d",
-            $current_year
+            "SELECT id, membership_expiration_date as expiry FROM {$wpdb->prefix}workedia_members WHERE membership_expiration_date = %s",
+            $target_date
         ));
 
         foreach ($members as $m) {
-            // Avoid duplicate emails in the same month for same type?
-            // Maybe just check if we logged one in the last 20 days.
-            if (!self::already_notified($m->id, 'membership_renewal', 25)) {
-                self::send_template_notification($m->id, 'membership_renewal', ['{year}' => $current_year]);
-            }
-        }
-    }
-
-    private static function check_license_expirations() {
-        $types = ['license_practice', 'license_facility'];
-        global $wpdb;
-
-        foreach ($types as $type) {
-            $template = self::get_template($type);
-            if (!$template || !$template->is_enabled) continue;
-
-            $days = $template->days_before;
-            $target_date = date('Y-m-d', strtotime("+$days days"));
-
-            $field = ($type === 'license_practice') ? 'license_expiration_date' : 'facility_license_expiration_date';
-
-            $members = $wpdb->get_results($wpdb->prepare(
-                "SELECT id, $field as expiry, facility_name FROM {$wpdb->prefix}workedia_members WHERE $field = %s",
-                $target_date
-            ));
-
-            foreach ($members as $m) {
-                if (!self::already_notified($m->id, $type, 5)) {
-                    self::send_template_notification($m->id, $type, [
-                        '{expiry_date}' => $m->expiry,
-                        '{facility_name}' => $m->facility_name ?? ''
-                    ]);
-                }
-            }
-        }
-    }
-
-    private static function check_payment_dues() {
-        $template = self::get_template('payment_reminder');
-        if (!$template || !$template->is_enabled) return;
-
-        $members = Workedia_DB::get_members(['limit' => -1]);
-        foreach ($members as $m) {
-            $dues = Workedia_Finance::calculate_member_dues($m->id);
-            if ($dues['balance'] > 500) { // Only remind if debt is significant
-                if (!self::already_notified($m->id, 'payment_reminder', 30)) {
-                    self::send_template_notification($m->id, 'payment_reminder', ['{balance}' => $dues['balance']]);
-                }
+            if (!self::already_notified($m->id, 'membership_renewal', 5)) {
+                self::send_template_notification($m->id, 'membership_renewal', ['{expiry_date}' => $m->expiry]);
             }
         }
     }

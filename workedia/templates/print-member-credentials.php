@@ -37,7 +37,6 @@ $workedia = Workedia_Settings::get_workedia_info();
                 <th style="width: 50px;">#</th>
                 <th>اسم العضو</th>
                 <th>الرقم القومي</th>
-                <th>الدرجة الوظيفية</th>
                 <th>كلمة المرور المؤقتة</th>
             </tr>
         </thead>
@@ -52,7 +51,6 @@ $workedia = Workedia_Settings::get_workedia_info();
                     <td><?php echo $count++; ?></td>
                     <td style="font-weight: 700;"><?php echo esc_html($s->name); ?></td>
                     <td class="code"><?php echo esc_html($s->national_id); ?></td>
-                    <td><?php echo esc_html(Workedia_Settings::get_professional_grades()[$s->professional_grade] ?? $s->professional_grade); ?></td>
                     <td class="code"><?php echo esc_html($pass); ?></td>
                 </tr>
             <?php endforeach; ?>

@@ -96,7 +96,6 @@
                 <select id="survey_recipients" class="workedia-select">
                     <option value="all">الجميع</option>
                     <option value="subscriber">الأعضاء فقط</option>
-                    <option value="subscriber">أعضاء Workedia فقط</option>
                     <option value="administrator">مسؤولو Workedia فقط</option>
                 </select>
             </div>

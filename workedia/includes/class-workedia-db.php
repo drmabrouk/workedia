@@ -53,16 +53,6 @@ class Workedia_DB {
             }
         }
 
-        if (isset($args['professional_grade']) && !empty($args['professional_grade'])) {
-            $query .= " AND professional_grade = %s";
-            $params[] = $args['professional_grade'];
-        }
-
-        if (isset($args['specialization']) && !empty($args['specialization'])) {
-            $query .= " AND specialization = %s";
-            $params[] = $args['specialization'];
-        }
-
         if (isset($args['membership_status']) && !empty($args['membership_status'])) {
             $query .= " AND membership_status = %s";
             $params[] = $args['membership_status'];
@@ -102,16 +92,6 @@ class Workedia_DB {
     public static function get_member_by_membership_number($membership_number) {
         global $wpdb;
         return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_members WHERE membership_number = %s", $membership_number));
-    }
-
-    public static function get_member_by_license_number($license_number) {
-        global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_members WHERE license_number = %s", $license_number));
-    }
-
-    public static function get_member_by_facility_number($facility_number) {
-        global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_members WHERE facility_number = %s", $facility_number));
     }
 
     public static function get_member_by_username($username) {
@@ -173,13 +153,6 @@ class Workedia_DB {
             'national_id' => $national_id,
             'name' => $name,
             'gender' => sanitize_text_field($data['gender'] ?? 'male'),
-            'professional_grade' => sanitize_text_field($data['professional_grade'] ?? ''),
-            'specialization' => sanitize_text_field($data['specialization'] ?? ''),
-            'academic_degree' => sanitize_text_field($data['academic_degree'] ?? ''),
-            'university' => sanitize_text_field($data['university'] ?? ''),
-            'faculty' => sanitize_text_field($data['faculty'] ?? ''),
-            'department' => sanitize_text_field($data['department'] ?? ''),
-            'graduation_date' => sanitize_text_field($data['graduation_date'] ?? null),
             'residence_street' => sanitize_textarea_field($data['residence_street'] ?? ''),
             'residence_city' => sanitize_text_field($data['residence_city'] ?? ''),
             'residence_governorate' => sanitize_text_field($data['residence_governorate'] ?? ''),
@@ -188,18 +161,6 @@ class Workedia_DB {
             'membership_start_date' => sanitize_text_field($data['membership_start_date'] ?? null),
             'membership_expiration_date' => sanitize_text_field($data['membership_expiration_date'] ?? null),
             'membership_status' => sanitize_text_field($data['membership_status'] ?? ''),
-            'license_number' => sanitize_text_field($data['license_number'] ?? ''),
-            'license_issue_date' => sanitize_text_field($data['license_issue_date'] ?? null),
-            'license_expiration_date' => sanitize_text_field($data['license_expiration_date'] ?? null),
-            'facility_number' => sanitize_text_field($data['facility_number'] ?? ''),
-            'facility_name' => sanitize_text_field($data['facility_name'] ?? ''),
-            'facility_license_issue_date' => sanitize_text_field($data['facility_license_issue_date'] ?? null),
-            'facility_license_expiration_date' => sanitize_text_field($data['facility_license_expiration_date'] ?? null),
-            'facility_address' => sanitize_textarea_field($data['facility_address'] ?? ''),
-            'sub_workedia' => sanitize_text_field($data['sub_workedia'] ?? ''),
-            'facility_category' => sanitize_text_field($data['facility_category'] ?? 'C'),
-            'last_paid_membership_year' => intval($data['last_paid_membership_year'] ?? 0),
-            'last_paid_license_year' => intval($data['last_paid_license_year'] ?? 0),
             'email' => $email ?: $national_id . '@irseg.org',
             'phone' => sanitize_text_field($data['phone'] ?? ''),
             'alt_phone' => sanitize_text_field($data['alt_phone'] ?? ''),
@@ -225,20 +186,16 @@ class Workedia_DB {
 
         $update_data = array();
         $fields = [
-            'national_id', 'name', 'gender', 'professional_grade', 'specialization',
-            'academic_degree', 'university', 'faculty', 'department', 'graduation_date',
+            'national_id', 'name', 'gender',
             'residence_street', 'residence_city', 'residence_governorate',
             'governorate', 'membership_number', 'membership_start_date',
-            'membership_expiration_date', 'membership_status', 'license_number',
-            'license_issue_date', 'license_expiration_date', 'facility_number',
-            'facility_name', 'facility_license_issue_date', 'facility_license_expiration_date',
-            'facility_address', 'sub_workedia', 'facility_category', 'last_paid_membership_year',
-            'last_paid_license_year', 'email', 'phone', 'alt_phone', 'notes'
+            'membership_expiration_date', 'membership_status',
+            'email', 'phone', 'alt_phone', 'notes'
         ];
 
         foreach ($fields as $f) {
             if (isset($data[$f])) {
-                if (in_array($f, ['facility_address', 'notes', 'residence_street'])) {
+                if (in_array($f, ['notes', 'residence_street'])) {
                     $update_data[$f] = sanitize_textarea_field($data[$f]);
                 } elseif ($f === 'email') {
                     $update_data[$f] = sanitize_email($data[$f]);
@@ -460,40 +417,6 @@ class Workedia_DB {
         $stats['total_members'] = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}workedia_members WHERE $where_member");
         $stats['total_officers'] = count(self::get_staff(['number' => -1]));
 
-        // Total Revenue
-        $join_member_rev = "";
-        $where_rev = "1=1";
-        if ($is_officer && !$has_full_access && $my_gov) {
-            $join_member_rev = "JOIN {$wpdb->prefix}workedia_members m ON p.member_id = m.id";
-            $where_rev = $wpdb->prepare("m.governorate = %s", $my_gov);
-        }
-        $stats['total_revenue'] = $wpdb->get_var("SELECT SUM(amount) FROM {$wpdb->prefix}workedia_payments p $join_member_rev WHERE $where_rev") ?: 0;
-
-        // Financial Trends (Last 30 Days)
-        $join_member = "";
-        $where_finance = "payment_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
-        if ($is_officer && !$has_full_access && $my_gov) {
-            $join_member = "JOIN {$wpdb->prefix}workedia_members m ON p.member_id = m.id";
-            $where_finance .= $wpdb->prepare(" AND m.governorate = %s", $my_gov);
-        }
-
-        $stats['financial_trends'] = $wpdb->get_results("
-            SELECT DATE(payment_date) as date, SUM(amount) as total
-            FROM {$wpdb->prefix}workedia_payments p
-            $join_member
-            WHERE $where_finance
-            GROUP BY DATE(payment_date)
-            ORDER BY date ASC
-        ");
-
-        // Specialization Distribution
-        $stats['specializations'] = $wpdb->get_results("
-            SELECT specialization, COUNT(*) as count
-            FROM {$wpdb->prefix}workedia_members
-            WHERE specialization != '' AND $where_member
-            GROUP BY specialization
-        ");
-
         return $stats;
     }
 
@@ -681,7 +604,6 @@ class Workedia_DB {
         return $wpdb->insert("{$wpdb->prefix}workedia_services", array(
             'name' => sanitize_text_field($data['name']),
             'description' => sanitize_textarea_field($data['description']),
-            'fees' => floatval($data['fees']),
             'required_fields' => $data['required_fields'] ?? '[]',
             'selected_profile_fields' => $data['selected_profile_fields'] ?? '[]',
             'status' => $data['status'] ?? 'active',
@@ -694,7 +616,6 @@ class Workedia_DB {
         $update_data = [];
         if (isset($data['name'])) $update_data['name'] = sanitize_text_field($data['name']);
         if (isset($data['description'])) $update_data['description'] = sanitize_textarea_field($data['description']);
-        if (isset($data['fees'])) $update_data['fees'] = floatval($data['fees']);
         if (isset($data['status'])) $update_data['status'] = sanitize_text_field($data['status']);
         if (isset($data['required_fields'])) $update_data['required_fields'] = $data['required_fields'];
         if (isset($data['selected_profile_fields'])) $update_data['selected_profile_fields'] = $data['selected_profile_fields'];
@@ -717,7 +638,6 @@ class Workedia_DB {
             'service_id' => intval($data['service_id']),
             'member_id' => intval($data['member_id']),
             'request_data' => $data['request_data'], // JSON string
-            'fees_paid' => 0,
             'status' => 'pending',
             'created_at' => current_time('mysql'),
             'updated_at' => current_time('mysql')
@@ -752,178 +672,15 @@ class Workedia_DB {
         return $wpdb->get_results($query);
     }
 
-    public static function update_service_request_status($request_id, $status, $fees_paid = null) {
+    public static function update_service_request_status($request_id, $status) {
         global $wpdb;
         $data = array(
             'status' => $status,
             'processed_by' => get_current_user_id(),
             'updated_at' => current_time('mysql')
         );
-        if ($fees_paid !== null) $data['fees_paid'] = floatval($fees_paid);
 
         return $wpdb->update("{$wpdb->prefix}workedia_service_requests", $data, array('id' => $request_id));
-    }
-
-    // Document Vault Methods
-    public static function add_document($data) {
-        global $wpdb;
-        $res = $wpdb->insert("{$wpdb->prefix}workedia_documents", array(
-            'member_id' => intval($data['member_id']),
-            'category' => sanitize_text_field($data['category']),
-            'title' => sanitize_text_field($data['title']),
-            'file_url' => esc_url_raw($data['file_url']),
-            'file_type' => sanitize_text_field($data['file_type']),
-            'created_by' => get_current_user_id(),
-            'created_at' => current_time('mysql')
-        ));
-        if ($res) {
-            $doc_id = $wpdb->insert_id;
-            self::log_document_action($doc_id, 'upload');
-            return $doc_id;
-        }
-        return false;
-    }
-
-    public static function get_member_documents($member_id, $args = []) {
-        global $wpdb;
-        $query = "SELECT * FROM {$wpdb->prefix}workedia_documents WHERE member_id = %d";
-        $params = [intval($member_id)];
-
-        if (!empty($args['category'])) {
-            $query .= " AND category = %s";
-            $params[] = sanitize_text_field($args['category']);
-        }
-
-        if (!empty($args['search'])) {
-            $query .= " AND title LIKE %s";
-            $params[] = '%' . $wpdb->esc_like($args['search']) . '%';
-        }
-
-        $query .= " ORDER BY created_at DESC";
-        return $wpdb->get_results($wpdb->prepare($query, $params));
-    }
-
-    public static function delete_document($doc_id) {
-        global $wpdb;
-        self::log_document_action($doc_id, 'delete');
-        return $wpdb->delete("{$wpdb->prefix}workedia_documents", array('id' => intval($doc_id)));
-    }
-
-    public static function log_document_action($doc_id, $action) {
-        global $wpdb;
-        return $wpdb->insert("{$wpdb->prefix}workedia_document_logs", array(
-            'document_id' => intval($doc_id),
-            'action' => sanitize_text_field($action),
-            'user_id' => get_current_user_id(),
-            'created_at' => current_time('mysql')
-        ));
-    }
-
-    public static function get_document_logs($doc_id) {
-        global $wpdb;
-        return $wpdb->get_results($wpdb->prepare(
-            "SELECT l.*, u.display_name as user_name
-             FROM {$wpdb->prefix}workedia_document_logs l
-             LEFT JOIN {$wpdb->prefix}users u ON l.user_id = u.ID
-             WHERE l.document_id = %d
-             ORDER BY l.created_at DESC",
-            intval($doc_id)
-        ));
-    }
-
-    // Publishing Center Methods
-    public static function save_pub_template($data) {
-        global $wpdb;
-        $table = $wpdb->prefix . 'workedia_pub_templates';
-        if (!empty($data['id'])) {
-            return $wpdb->update($table, [
-                'title' => sanitize_text_field($data['title']),
-                'content' => $data['content'],
-                'doc_type' => sanitize_text_field($data['doc_type']),
-                'settings' => $data['settings']
-            ], ['id' => intval($data['id'])]);
-        } else {
-            return $wpdb->insert($table, [
-                'title' => sanitize_text_field($data['title']),
-                'content' => $data['content'],
-                'doc_type' => sanitize_text_field($data['doc_type']),
-                'settings' => $data['settings']
-            ]);
-        }
-    }
-
-    public static function get_pub_templates() {
-        global $wpdb;
-        return $wpdb->get_results("SELECT * FROM {$wpdb->prefix}workedia_pub_templates ORDER BY created_at DESC");
-    }
-
-    public static function get_pub_template($id) {
-        global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_pub_templates WHERE id = %d", $id));
-    }
-
-    public static function generate_pub_document($data) {
-        global $wpdb;
-        $table = $wpdb->prefix . 'workedia_pub_documents';
-
-        // Generate Unique Serial: PUB-YYYY-XXXXX
-        $year = date('Y');
-        $last_id = $wpdb->get_var("SELECT MAX(id) FROM $table");
-        $serial = 'PUB-' . $year . '-' . str_pad(($last_id + 1), 5, '0', STR_PAD_LEFT);
-
-        $res = $wpdb->insert($table, [
-            'template_id' => intval($data['template_id'] ?? 0),
-            'serial_number' => $serial,
-            'title' => sanitize_text_field($data['title']),
-            'content' => $data['content'],
-            'options' => json_encode($data['options'] ?? []),
-            'created_by' => get_current_user_id(),
-            'created_at' => current_time('mysql')
-        ]);
-
-        return $res ? $wpdb->insert_id : false;
-    }
-
-    public static function add_pub_document($data) {
-        global $wpdb;
-        $res = $wpdb->insert("{$wpdb->prefix}workedia_pub_documents", [
-            'template_id' => intval($data['template_id']),
-            'serial_number' => sanitize_text_field($data['serial_number']),
-            'title' => sanitize_text_field($data['title']),
-            'member_id' => intval($data['member_id'] ?? 0),
-            'content_data' => $data['content_data'],
-            'created_by' => get_current_user_id(),
-            'created_at' => current_time('mysql')
-        ]);
-        return $res ? $wpdb->insert_id : false;
-    }
-
-    public static function get_pub_documents($args = []) {
-        global $wpdb;
-        $where = "1=1";
-        if (!empty($args['search'])) {
-            $where .= $wpdb->prepare(" AND (d.title LIKE %s OR d.serial_number LIKE %s)", '%' . $wpdb->esc_like($args['search']) . '%', '%' . $wpdb->esc_like($args['search']) . '%');
-        }
-        return $wpdb->get_results("
-            SELECT d.*, u.display_name as creator_name
-            FROM {$wpdb->prefix}workedia_pub_documents d
-            LEFT JOIN {$wpdb->prefix}users u ON d.created_by = u.ID
-            WHERE $where
-            ORDER BY d.created_at DESC
-        ");
-    }
-
-    public static function get_pub_document_by_serial($serial) {
-        global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_pub_documents WHERE serial_number = %s", $serial));
-    }
-
-    public static function increment_pub_download($id, $format) {
-        global $wpdb;
-        return $wpdb->query($wpdb->prepare(
-            "UPDATE {$wpdb->prefix}workedia_pub_documents SET download_count = download_count + 1, last_format = %s WHERE id = %d",
-            $format, $id
-        ));
     }
 
     // Ticketing System Methods
@@ -1100,83 +857,6 @@ class Workedia_DB {
     public static function delete_article($id) {
         global $wpdb;
         return $wpdb->delete("{$wpdb->prefix}workedia_articles", ['id' => intval($id)]);
-    }
-
-    // Membership Request Multi-Stage Methods
-    public static function add_membership_request($data) {
-        global $wpdb;
-        return $wpdb->insert("{$wpdb->prefix}workedia_membership_requests", array(
-            'national_id' => sanitize_text_field($data['national_id']),
-            'name' => sanitize_text_field($data['name']),
-            'gender' => sanitize_text_field($data['gender'] ?? 'male'),
-            'professional_grade' => sanitize_text_field($data['professional_grade'] ?? ''),
-            'specialization' => sanitize_text_field($data['specialization'] ?? ''),
-            'academic_degree' => sanitize_text_field($data['academic_degree'] ?? ''),
-            'university' => sanitize_text_field($data['university'] ?? ''),
-            'faculty' => sanitize_text_field($data['faculty'] ?? ''),
-            'department' => sanitize_text_field($data['department'] ?? ''),
-            'graduation_date' => sanitize_text_field($data['graduation_date'] ?? null),
-            'residence_street' => sanitize_textarea_field($data['residence_street'] ?? ''),
-            'residence_city' => sanitize_text_field($data['residence_city'] ?? ''),
-            'residence_governorate' => sanitize_text_field($data['residence_governorate'] ?? ''),
-            'governorate' => sanitize_text_field($data['governorate'] ?? ''),
-            'phone' => sanitize_text_field($data['phone'] ?? ''),
-            'email' => sanitize_email($data['email'] ?? ''),
-            'notes' => sanitize_textarea_field($data['notes'] ?? ''),
-            'current_stage' => 1,
-            'status' => 'Pending Payment',
-            'created_at' => current_time('mysql')
-        ));
-    }
-
-    public static function update_membership_request($id, $data) {
-        global $wpdb;
-        $update_data = array();
-        $fields = [
-            'name', 'gender', 'professional_grade', 'specialization', 'academic_degree',
-            'university', 'faculty', 'department', 'graduation_date',
-            'residence_street', 'residence_city', 'residence_governorate', 'governorate',
-            'phone', 'email', 'notes', 'payment_method', 'payment_reference', 'payment_screenshot_url',
-            'doc_qualification_url', 'doc_id_url', 'doc_military_url', 'doc_criminal_url', 'doc_photo_url',
-            'current_stage', 'status', 'rejection_reason', 'processed_by'
-        ];
-
-        foreach ($fields as $f) {
-            if (isset($data[$f])) {
-                if (in_array($f, ['notes', 'residence_street', 'rejection_reason'])) {
-                    $update_data[$f] = sanitize_textarea_field($data[$f]);
-                } elseif (strpos($f, '_url') !== false) {
-                    $update_data[$f] = esc_url_raw($data[$f]);
-                } elseif ($f === 'email') {
-                    $update_data[$f] = sanitize_email($data[$f]);
-                } elseif ($f === 'current_stage') {
-                    $update_data[$f] = intval($data[$f]);
-                } else {
-                    $update_data[$f] = sanitize_text_field($data[$f]);
-                }
-            }
-        }
-
-        return $wpdb->update("{$wpdb->prefix}workedia_membership_requests", $update_data, array('id' => intval($id)));
-    }
-
-    public static function get_membership_request($id) {
-        global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_membership_requests WHERE id = %d", $id));
-    }
-
-    public static function get_membership_request_by_national_id($national_id) {
-        global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_membership_requests WHERE national_id = %s", $national_id));
-    }
-
-    public static function get_membership_requests($status = null) {
-        global $wpdb;
-        $query = "SELECT * FROM {$wpdb->prefix}workedia_membership_requests";
-        if ($status) {
-            return $wpdb->get_results($wpdb->prepare($query . " WHERE status = %s ORDER BY created_at DESC", $status));
-        }
-        return $wpdb->get_results($query . " ORDER BY created_at DESC");
     }
 
     // Global Alert System Methods
