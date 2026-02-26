@@ -502,7 +502,17 @@ class Workedia_Activator {
         // Core info migration
         $old_info = get_option('sm_syndicate_info');
         if ($old_info && !get_option('workedia_info')) {
-            update_option('workedia_info', $old_info);
+            $mapped_info = [];
+            foreach ((array)$old_info as $key => $value) {
+                $new_key = str_replace(['syndicate_', 'sm_'], 'workedia_', $key);
+                $mapped_info[$new_key] = $value;
+            }
+            // Ensure essential keys are present
+            if (isset($old_info['syndicate_name'])) $mapped_info['workedia_name'] = $old_info['syndicate_name'];
+            if (isset($old_info['syndicate_officer_name'])) $mapped_info['workedia_officer_name'] = $old_info['syndicate_officer_name'];
+            if (isset($old_info['syndicate_logo'])) $mapped_info['workedia_logo'] = $old_info['syndicate_logo'];
+
+            update_option('workedia_info', $mapped_info);
         }
 
         // Settings migration
@@ -573,62 +583,37 @@ class Workedia_Activator {
     }
 
     private static function setup_roles() {
-        $workedia_capabilities = array(
-            'read' => true,
-            'manage_options' => true,
-            'workedia_manage_system' => true,
-            'workedia_manage_users' => true,
-            'workedia_manage_members' => true,
-            'workedia_manage_finance' => true,
-            'workedia_manage_licenses' => true,
-            'workedia_print_reports' => true,
-            'workedia_full_access' => true
-        );
+        // Remove custom roles if they exist
+        remove_role('workedia_system_admin');
+        remove_role('workedia_admin');
+        remove_role('workedia_member');
+        remove_role('workedia_officer');
+        remove_role('workedia_syndicate_admin');
+        remove_role('workedia_syndicate_member');
+        remove_role('sm_system_admin');
+        remove_role('sm_syndicate_admin');
+        remove_role('sm_syndicate_member');
+        remove_role('sm_officer');
+        remove_role('sm_member');
+        remove_role('sm_parent');
+        remove_role('sm_student');
 
-        // 1. System Manager (مدير النظام)
-        if (!get_role('workedia_system_admin')) {
-            add_role('workedia_system_admin', 'مدير النظام', $workedia_capabilities);
-        } else {
-            $role = get_role('workedia_system_admin');
-            foreach ($workedia_capabilities as $cap => $grant) {
-                $role->add_cap($cap, $grant);
-            }
-        }
-
-        // Ensure WordPress Administrator has all SM capabilities
+        // Remove custom capabilities from administrator role
         $admin_role = get_role('administrator');
         if ($admin_role) {
-            foreach ($workedia_capabilities as $cap => $grant) {
-                $admin_role->add_cap($cap, $grant);
+            $custom_caps = [
+                'workedia_manage_system',
+                'workedia_manage_users',
+                'workedia_manage_members',
+                'workedia_manage_finance',
+                'workedia_manage_licenses',
+                'workedia_print_reports',
+                'workedia_full_access',
+                'workedia_manage_archive'
+            ];
+            foreach ($custom_caps as $cap) {
+                $admin_role->remove_cap($cap);
             }
-        }
-
-        // Add specific caps for Digital Archive
-        $admin_role->add_cap('workedia_manage_archive', true);
-        if (get_role('workedia_system_admin')) get_role('workedia_system_admin')->add_cap('workedia_manage_archive', true);
-        if (get_role('workedia_admin')) get_role('workedia_admin')->add_cap('workedia_manage_archive', true);
-
-        // 2. Workedia Administrator (مسؤول Workedia)
-        $workedia_admin_caps = array(
-            'read' => true,
-            'workedia_manage_system' => true,
-            'workedia_manage_members' => true,
-            'workedia_manage_finance' => true,
-            'workedia_manage_licenses' => true,
-            'workedia_print_reports' => true
-        );
-        if (!get_role('workedia_admin')) {
-            add_role('workedia_admin', 'مسؤول Workedia', $workedia_admin_caps);
-        } else {
-            $role = get_role('workedia_admin');
-            foreach ($workedia_admin_caps as $cap => $grant) {
-                $role->add_cap($cap, $grant);
-            }
-        }
-
-        // 3. Workedia Member (عضو Workedia) - Restricted to personal profile
-        if (!get_role('workedia_member')) {
-            add_role('workedia_member', 'عضو Workedia', array('read' => true));
         }
 
         self::migrate_user_roles();
@@ -717,7 +702,7 @@ class Workedia_Activator {
                 'user_email' => $m->email ?: $m->national_id . '@irseg.org',
                 'display_name' => $m->name,
                 'user_pass' => $temp_pass,
-                'role' => 'workedia_member'
+                'role' => 'subscriber'
             ]);
             if (!is_wp_error($user_id)) {
                 update_user_meta($user_id, 'workedia_temp_pass', $temp_pass);
@@ -731,13 +716,18 @@ class Workedia_Activator {
 
     private static function migrate_user_roles() {
         $role_migration = array(
-            'sm_system_admin'     => 'workedia_system_admin',
-            'sm_syndicate_admin'  => 'workedia_admin',
-            'sm_syndicate_member' => 'workedia_member',
-            'sm_officer'          => 'workedia_admin',
-            'sm_member'           => 'workedia_member',
-            'sm_parent'           => 'workedia_member',
-            'sm_student'          => 'workedia_member'
+            'sm_system_admin'           => 'administrator',
+            'sm_syndicate_admin'        => 'administrator',
+            'sm_syndicate_member'       => 'subscriber',
+            'sm_officer'                => 'administrator',
+            'sm_member'                 => 'subscriber',
+            'sm_parent'                 => 'subscriber',
+            'sm_student'                => 'subscriber',
+            'workedia_system_admin'     => 'administrator',
+            'workedia_admin'            => 'administrator',
+            'workedia_member'           => 'subscriber',
+            'workedia_syndicate_admin'  => 'administrator',
+            'workedia_syndicate_member' => 'subscriber'
         );
 
         foreach ($role_migration as $old => $new) {

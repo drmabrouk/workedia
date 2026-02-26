@@ -28,7 +28,7 @@
                         <th>قيمة الخدمة</th>
                         <th>قيمة الغرامة</th>
                         <th>إجمالي المستحق</th>
-                        <?php if (current_user_can('workedia_manage_finance')): ?>
+                        <?php if (current_user_can('manage_options')): ?>
                         <th>تحديد للسداد</th>
                         <?php endif; ?>
                     </tr>
@@ -49,10 +49,10 @@
                         <td><?php echo number_format($item['amount'], 2); ?></td>
                         <td style="color:#e53e3e; font-weight: 700;"><?php echo number_format($item['penalty'], 2); ?></td>
                         <td style="font-weight:900;"><?php echo number_format($item['total'], 2); ?></td>
-                        <?php if (current_user_can('workedia_manage_finance')): ?>
+                        <?php if (current_user_can('manage_options')): ?>
                         <td style="text-align: center;">
                             <button type="button" class="workedia-btn" style="height: 25px; padding: 0 10px; font-size: 10px; width: auto; background: #2c3e50;"
-                                onclick="smSelectForPayment(<?php echo $item['total']; ?>, '<?php echo esc_js($item['item']); ?>')">سداد هذا البند</button>
+                                onclick="workediaSelectForPayment(<?php echo $item['total']; ?>, '<?php echo esc_js($item['item']); ?>')">سداد هذا البند</button>
                         </td>
                         <?php endif; ?>
                     </tr>
@@ -61,13 +61,13 @@
                 <tfoot>
                     <tr style="background:#f1f5f9; font-weight: 800;">
                         <td colspan="3">إجمالي المتأخرات والمستحقات (Fine/Amount Due)</td>
-                        <td colspan="<?php echo current_user_can('workedia_manage_finance') ? '2' : '1'; ?>" style="color:var(--workedia-primary-color); font-size:1.1em;"><?php echo number_format($dues['total_owed'], 2); ?> ج.م</td>
+                        <td colspan="<?php echo current_user_can('manage_options') ? '2' : '1'; ?>" style="color:var(--workedia-primary-color); font-size:1.1em;"><?php echo number_format($dues['total_owed'], 2); ?> ج.م</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
 
-        <?php if (current_user_can('workedia_manage_finance')): ?>
+        <?php if (current_user_can('manage_options')): ?>
         <div style="margin-top: 25px; background: #ffffff; border: 2px solid #e2e8f0; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
             <h5 style="margin: 0 0 20px 0; color: #111F35; font-size: 1.1em; font-weight: 800; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                 <span class="dashicons dashicons-money-alt" style="vertical-align: middle;"></span> تحصيل مبلغ مالي جديد
@@ -110,7 +110,7 @@
                     <label class="workedia-label" style="font-size:12px;">ملاحظات التدقيق:</label>
                     <textarea name="notes" class="workedia-input" rows="2" placeholder="أي ملاحظات إضافية بخصوص هذه العملية..."></textarea>
                 </div>
-                <button type="button" onclick="smSubmitPayment(this)" class="workedia-btn" style="background:#27ae60; height: 50px; font-weight: 800; font-size: 1.1em; width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);">
+                <button type="button" onclick="workediaSubmitPayment(this)" class="workedia-btn" style="background:#27ae60; height: 50px; font-weight: 800; font-size: 1.1em; width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);">
                     إتمام عملية السداد وإصدار فاتورة إلكترونية
                 </button>
             </form>
@@ -156,7 +156,7 @@
 </div>
 
 <script>
-function smSelectForPayment(amount, reason) {
+function workediaSelectForPayment(amount, reason) {
     const form = document.getElementById('record-payment-form');
     if (!form) return;
     form.querySelector('[name="amount"]').value = amount;

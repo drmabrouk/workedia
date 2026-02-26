@@ -3,9 +3,9 @@
 $my_id = get_current_user_id();
 $user = wp_get_current_user();
 $roles = (array)$user->roles;
-$is_admin = in_array('workedia_system_admin', $roles) || in_array('administrator', $roles);
-$is_officer = in_array('workedia_admin', $roles);
-$is_member = in_array('workedia_member', $roles);
+$is_admin = in_array('administrator', $roles);
+$is_officer = in_array('administrator', $roles);
+$is_member = in_array('subscriber', $roles);
 $is_official = $is_admin || $is_officer;
 
 // Get member data if applicable
@@ -47,35 +47,35 @@ $priorities = array(
             <h2 style="margin: 0; font-weight: 800; color: var(--workedia-dark-color); font-size: 1.2em; flex: 1; min-width: 200px;">نظام التذاكر والدعم</h2>
 
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <select id="filter-status" class="workedia-select" onchange="smLoadTickets()" style="width: 120px; height: 40px; padding: 0 10px;">
+                <select id="filter-status" class="workedia-select" onchange="workediaLoadTickets()" style="width: 120px; height: 40px; padding: 0 10px;">
                     <option value="">كل الحالات</option>
                     <?php foreach($statuses as $k => $v) echo "<option value='$k'>{$v['label']}</option>"; ?>
                 </select>
 
-                <select id="filter-category" class="workedia-select" onchange="smLoadTickets()" style="width: 130px; height: 40px; padding: 0 10px;">
+                <select id="filter-category" class="workedia-select" onchange="workediaLoadTickets()" style="width: 130px; height: 40px; padding: 0 10px;">
                     <option value="">كل الأقسام</option>
                     <?php foreach($categories as $k => $v) echo "<option value='$k'>{$v['label']}</option>"; ?>
                 </select>
 
-                <select id="filter-priority" class="workedia-select" onchange="smLoadTickets()" style="width: 110px; height: 40px; padding: 0 10px;">
+                <select id="filter-priority" class="workedia-select" onchange="workediaLoadTickets()" style="width: 110px; height: 40px; padding: 0 10px;">
                     <option value="">كل الأولويات</option>
                     <?php foreach($priorities as $k => $v) echo "<option value='$k'>$v</option>"; ?>
                 </select>
 
                 <?php if ($is_admin): ?>
-                    <select id="filter-province" class="workedia-select" onchange="smLoadTickets()" style="width: 130px; height: 40px; padding: 0 10px;">
+                    <select id="filter-province" class="workedia-select" onchange="workediaLoadTickets()" style="width: 130px; height: 40px; padding: 0 10px;">
                         <option value="">كل المحافظات</option>
                         <?php foreach(Workedia_Settings::get_governorates() as $k => $v) echo "<option value='$k'>$v</option>"; ?>
                     </select>
                 <?php endif; ?>
 
                 <div style="position: relative;">
-                    <input type="text" id="filter-search" class="workedia-input" placeholder="بحث..." oninput="smLoadTickets()" style="width: 180px; height: 40px; padding-left: 30px;">
+                    <input type="text" id="filter-search" class="workedia-input" placeholder="بحث..." oninput="workediaLoadTickets()" style="width: 180px; height: 40px; padding-left: 30px;">
                     <span class="dashicons dashicons-search" style="position: absolute; left: 8px; top: 10px; color: #94a3b8; font-size: 18px;"></span>
                 </div>
 
                 <?php if ($is_member): ?>
-                    <button onclick="smOpenCreateTicketModal()" class="workedia-btn" style="height: 40px; padding: 0 15px; font-weight: 700;">+ تذكرة</button>
+                    <button onclick="workediaOpenCreateTicketModal()" class="workedia-btn" style="height: 40px; padding: 0 15px; font-weight: 700;">+ تذكرة</button>
                 <?php endif; ?>
             </div>
         </div>
@@ -89,7 +89,7 @@ $priorities = array(
             </div>
         </div>
 
-        <div id="ticket-details-container" style="display: none; animation: smFadeIn 0.3s ease-out;">
+        <div id="ticket-details-container" style="display: none; animation: workediaFadeIn 0.3s ease-out;">
             <!-- Loaded via JS -->
         </div>
     </div>
@@ -148,12 +148,12 @@ $priorities = array(
     const isOfficial = <?php echo $is_official ? 'true' : 'false'; ?>;
     const currentUserId = <?php echo $my_id; ?>;
 
-    window.smOpenCreateTicketModal = function() {
+    window.workediaOpenCreateTicketModal = function() {
         $('#create-ticket-form')[0].reset();
         $('#create-ticket-modal').fadeIn().css('display', 'flex');
     };
 
-    window.smLoadTickets = function(showLoader = true) {
+    window.workediaLoadTickets = function(showLoader = true) {
         const grid = $('#workedia-tickets-grid');
         if (showLoader) grid.css('opacity', '0.5');
 
@@ -175,7 +175,7 @@ $priorities = array(
                     const priorityLabel = priorities[t.priority];
 
                     const card = $(`
-                        <div class="workedia-ticket-card" onclick="smViewTicket(${t.id})" style="background: #fff; border: 1px solid var(--workedia-border-color); border-radius: 12px; padding: 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 20px;">
+                        <div class="workedia-ticket-card" onclick="workediaViewTicket(${t.id})" style="background: #fff; border: 1px solid var(--workedia-border-color); border-radius: 12px; padding: 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 20px;">
                             <div style="width: 50px; height: 50px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; border: 1px solid #e2e8f0;">
                                 ${t.member_photo ? `<img src="${t.member_photo}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span class="dashicons dashicons-admin-users" style="color: #94a3b8;"></span>`}
                             </div>
@@ -205,7 +205,7 @@ $priorities = array(
         });
     };
 
-    window.smViewTicket = function(id, silent = false) {
+    window.workediaViewTicket = function(id, silent = false) {
         currentActiveTicketId = id;
         if (!silent) {
             $('#tickets-list-container').hide();
@@ -240,7 +240,7 @@ $priorities = array(
                     <div style="background: #fff; border-radius: 15px; border: 1px solid var(--workedia-border-color); overflow: hidden; box-shadow: var(--workedia-shadow);">
                         <div style="padding: 20px 30px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <button onclick="smBackToList()" class="workedia-btn workedia-btn-outline" style="width: auto; padding: 5px 10px;"><span class="dashicons dashicons-arrow-right-alt2"></span> العودة</button>
+                                <button onclick="workediaBackToList()" class="workedia-btn workedia-btn-outline" style="width: auto; padding: 5px 10px;"><span class="dashicons dashicons-arrow-right-alt2"></span> العودة</button>
                                 <div>
                                     <h3 style="margin: 0; font-weight: 800; color: var(--workedia-dark-color);">${t.subject}</h3>
                                     <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #64748b; margin-top: 5px;">
@@ -252,7 +252,7 @@ $priorities = array(
                             </div>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <span class="workedia-badge ${stat.class}">${stat.label}</span>
-                                ${isOfficial && t.status !== 'closed' ? `<button onclick="smCloseTicket(${t.id})" class="workedia-btn" style="background: #e53e3e; width: auto; padding: 5px 15px; font-size: 12px;">إغلاق التذكرة</button>` : ''}
+                                ${isOfficial && t.status !== 'closed' ? `<button onclick="workediaCloseTicket(${t.id})" class="workedia-btn" style="background: #e53e3e; width: auto; padding: 5px 15px; font-size: 12px;">إغلاق التذكرة</button>` : ''}
                             </div>
                         </div>
 
@@ -303,7 +303,7 @@ $priorities = array(
                     .then(r => r.json())
                     .then(res => {
                         if (res.success) {
-                            smViewTicket(t.id);
+                            workediaViewTicket(t.id);
                         } else alert('خطأ: ' + res.data);
                     });
                 });
@@ -311,11 +311,11 @@ $priorities = array(
         });
     };
 
-    window.smBackToList = function() {
+    window.workediaBackToList = function() {
         currentActiveTicketId = null;
         $('#ticket-details-container').hide();
         $('#tickets-list-container').show();
-        smLoadTickets();
+        workediaLoadTickets();
     };
 
     function renderThreadHtml(thread) {
@@ -343,7 +343,7 @@ $priorities = array(
         return html;
     }
 
-    window.smCloseTicket = function(id) {
+    window.workediaCloseTicket = function(id) {
         if (!confirm('هل أنت متأكد من إغلاق هذه التذكرة بشكل نهائي؟')) return;
         const fd = new FormData();
         fd.append('action', 'workedia_close_ticket');
@@ -354,7 +354,7 @@ $priorities = array(
         .then(r => r.json())
         .then(res => {
             if (res.success) {
-                smViewTicket(id);
+                workediaViewTicket(id);
             } else alert('خطأ: ' + res.data);
         });
     };
@@ -373,8 +373,8 @@ $priorities = array(
         .then(res => {
             if (res.success) {
                 $('#create-ticket-modal').fadeOut();
-                smLoadTickets();
-                smViewTicket(res.data);
+                workediaLoadTickets();
+                workediaViewTicket(res.data);
             } else {
                 alert('خطأ: ' + res.data);
                 btn.prop('disabled', false).text('إرسال التذكرة');
@@ -382,15 +382,15 @@ $priorities = array(
         });
     });
 
-    smLoadTickets();
+    workediaLoadTickets();
 
     // Auto-refresh logic
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     autoRefreshInterval = setInterval(() => {
         if (currentActiveTicketId) {
-            smViewTicket(currentActiveTicketId, true);
+            workediaViewTicket(currentActiveTicketId, true);
         } else if ($('#tickets-list-container').is(':visible')) {
-            smLoadTickets(false);
+            workediaLoadTickets(false);
         }
     }, 5000);
 

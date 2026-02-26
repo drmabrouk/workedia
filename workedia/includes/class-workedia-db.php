@@ -4,17 +4,17 @@ class Workedia_DB {
 
     public static function get_staff($args = array()) {
         $user = wp_get_current_user();
-        $is_workedia_admin = in_array('workedia_admin', (array)$user->roles);
+        $is_administrator = in_array('administrator', (array)$user->roles);
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $default_args = array(
-            'role__in' => array('administrator', 'workedia_system_admin', 'workedia_admin', 'workedia_member'),
+            'role__in' => array('administrator', 'subscriber'),
             'number' => 20,
             'offset' => 0
         );
 
-        if ($is_workedia_admin) {
-            $default_args['role'] = 'workedia_member'; // Can only see members
+        if ($is_administrator) {
+            $default_args['role'] = 'subscriber'; // Can only see members
             if ($my_gov) {
                 $default_args['meta_query'] = array(
                     array(
@@ -44,8 +44,8 @@ class Workedia_DB {
 
         // Role-based filtering (Governorate)
         $user = wp_get_current_user();
-        $is_officer = in_array('workedia_admin', (array)$user->roles) || in_array('workedia_member', (array)$user->roles);
-        if ($is_officer && !current_user_can('manage_options') && !current_user_can('workedia_full_access')) {
+        $is_officer = in_array('administrator', (array)$user->roles);
+        if ($is_officer && !current_user_can('manage_options') && !current_user_can('manage_options')) {
             $gov = get_user_meta($user->ID, 'workedia_governorate', true);
             if ($gov) {
                 $query .= " AND governorate = %s";
@@ -156,7 +156,7 @@ class Workedia_DB {
             'user_email' => $email ?: $national_id . '@irseg.org',
             'display_name' => $name,
             'user_pass' => $temp_pass,
-            'role' => 'workedia_member'
+            'role' => 'subscriber'
         ));
 
         if (!is_wp_error($wp_user_id)) {
@@ -334,7 +334,7 @@ class Workedia_DB {
 
     public static function get_governorate_officials($governorate) {
         return get_users(array(
-            'role__in' => array('workedia_system_admin', 'workedia_admin', 'administrator'),
+            'role__in' => array('administrator'),
             'meta_query' => array(
                 array(
                     'key' => 'workedia_governorate',
@@ -448,8 +448,8 @@ class Workedia_DB {
         $stats = array();
 
         $user = wp_get_current_user();
-        $is_officer = in_array('workedia_admin', (array)$user->roles) || in_array('workedia_member', (array)$user->roles);
-        $has_full_access = current_user_can('workedia_full_access') || current_user_can('manage_options');
+        $is_officer = in_array('administrator', (array)$user->roles);
+        $has_full_access = current_user_can('manage_options');
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $where_member = "1=1";
@@ -555,7 +555,7 @@ class Workedia_DB {
     public static function get_surveys($role) {
         global $wpdb;
         $roles = [$role, 'all'];
-        if ($role === 'workedia_member') $roles[] = 'workedia_member';
+        if ($role === 'subscriber') $roles[] = 'subscriber';
 
         $placeholders = implode(',', array_fill(0, count($roles), '%s'));
         return $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}workedia_surveys WHERE recipients IN ($placeholders) AND status = 'active' ORDER BY created_at DESC", ...$roles));
@@ -582,8 +582,8 @@ class Workedia_DB {
         if (!$survey) return array();
 
         $user = wp_get_current_user();
-        $is_officer = in_array('workedia_admin', (array)$user->roles) || in_array('workedia_member', (array)$user->roles);
-        $has_full_access = current_user_can('workedia_full_access') || current_user_can('manage_options');
+        $is_officer = in_array('administrator', (array)$user->roles);
+        $has_full_access = current_user_can('manage_options');
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $where = $wpdb->prepare("survey_id = %d", $survey_id);
@@ -627,8 +627,8 @@ class Workedia_DB {
     public static function get_update_requests($status = 'pending') {
         global $wpdb;
         $user = wp_get_current_user();
-        $is_officer = in_array('workedia_admin', (array)$user->roles) || in_array('workedia_member', (array)$user->roles);
-        $has_full_access = current_user_can('workedia_full_access') || current_user_can('manage_options');
+        $is_officer = in_array('administrator', (array)$user->roles);
+        $has_full_access = current_user_can('manage_options');
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $where = $wpdb->prepare("r.status = %s", $status);
@@ -972,9 +972,9 @@ class Workedia_DB {
     public static function get_tickets($args = array()) {
         global $wpdb;
         $user = wp_get_current_user();
-        $is_sys_admin = in_array('workedia_system_admin', $user->roles) || in_array('administrator', $user->roles);
-        $is_officer = in_array('workedia_admin', $user->roles);
-        $is_member = in_array('workedia_member', $user->roles);
+        $is_sys_admin = in_array('administrator', $user->roles);
+        $is_officer = in_array('administrator', $user->roles);
+        $is_member = in_array('subscriber', $user->roles);
 
         $where = "1=1";
         $params = array();

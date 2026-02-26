@@ -9,12 +9,12 @@ if (!$member) {
 }
 
 $user = wp_get_current_user();
-$is_sys_manager = in_array('workedia_system_admin', (array)$user->roles);
-$is_workedia_admin = in_array('workedia_admin', (array)$user->roles);
-$is_workedia_staff = in_array('workedia_member', (array)$user->roles);
+$is_sys_manager = in_array('administrator', (array)$user->roles);
+$is_administrator = in_array('administrator', (array)$user->roles);
+$is_subscriber = in_array('subscriber', (array)$user->roles);
 
 // IDOR CHECK: Restricted users can only see their own profile
-if ($is_workedia_staff && !current_user_can('workedia_manage_members')) {
+if ($is_subscriber && !current_user_can('manage_options')) {
     if ($member->wp_user_id != $user->ID) {
         echo '<div class="error" style="padding:20px; background:#fff5f5; color:#c53030; border-radius:8px; border:1px solid #feb2b2;"><h4>⚠️ عذراً، لا تملك صلاحية الوصول لهذا الملف.</h4><p>لا يمكنك استعراض بيانات الأعضاء الآخرين.</p></div>';
         return;
@@ -22,7 +22,7 @@ if ($is_workedia_staff && !current_user_can('workedia_manage_members')) {
 }
 
 // GEOGRAPHIC ACCESS CHECK
-if ($is_workedia_admin) {
+if ($is_administrator) {
     $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
     if ($my_gov && $member->governorate !== $my_gov) {
         echo '<div class="error" style="padding:20px; background:#fff5f5; color:#c53030; border-radius:8px; border:1px solid #feb2b2;"><h4>⚠️ عذراً، لا تملك صلاحية الوصول لهذا الملف.</h4><p>هذا العضو يتبع لمحافظة أخرى غير المسجلة في حسابك.</p></div>';
@@ -49,10 +49,10 @@ $acc_status = Workedia_Finance::get_member_status($member->id);
                         👤
                     <?php endif; ?>
                 </div>
-                <button onclick="smTriggerPhotoUpload()" style="position: absolute; bottom: 0; right: 0; background: var(--workedia-primary-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                <button onclick="workediaTriggerPhotoUpload()" style="position: absolute; bottom: 0; right: 0; background: var(--workedia-primary-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
                     <span class="dashicons dashicons-camera" style="font-size: 14px; width: 14px; height: 14px;"></span>
                 </button>
-                <input type="file" id="member-photo-input" style="display:none;" accept="image/*" onchange="smUploadMemberPhoto(<?php echo $member->id; ?>)">
+                <input type="file" id="member-photo-input" style="display:none;" accept="image/*" onchange="workediaUploadMemberPhoto(<?php echo $member->id; ?>)">
             </div>
             <div>
                 <h2 style="margin:0; color: var(--workedia-dark-color);"><?php echo esc_html($member->name); ?></h2>
@@ -63,23 +63,23 @@ $acc_status = Workedia_Finance::get_member_status($member->id);
             </div>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
-            <?php if ($is_member || $is_workedia_member): ?>
-                <button onclick="smOpenUpdateMemberRequestModal()" class="workedia-btn" style="background: #3182ce; width: auto;"><span class="dashicons dashicons-edit"></span> طلب تحديث بياناتي</button>
+            <?php if ($is_subscriber): ?>
+                <button onclick="workediaOpenUpdateMemberRequestModal()" class="workedia-btn" style="background: #3182ce; width: auto;"><span class="dashicons dashicons-edit"></span> طلب تحديث بياناتي</button>
             <?php elseif (!$is_member): ?>
-                <button onclick="editSmMember(JSON.parse(this.dataset.member))" data-member='<?php echo esc_attr(wp_json_encode($member)); ?>' class="workedia-btn" style="background: #3182ce; width: auto;"><span class="dashicons dashicons-edit"></span> تعديل البيانات</button>
+                <button onclick="workediaEditMember(JSON.parse(this.dataset.member))" data-member='<?php echo esc_attr(wp_json_encode($member)); ?>' class="workedia-btn" style="background: #3182ce; width: auto;"><span class="dashicons dashicons-edit"></span> تعديل البيانات</button>
             <?php endif; ?>
 
             <div class="workedia-dropdown" style="position:relative; display:inline-block;">
-                <button class="workedia-btn" style="background: #111F35; width: auto;" onclick="smToggleFinanceDropdown()"><span class="dashicons dashicons-money-alt"></span> المعاملات المالية <span class="dashicons dashicons-arrow-down-alt2" style="font-size: 10px;"></span></button>
+                <button class="workedia-btn" style="background: #111F35; width: auto;" onclick="workediaToggleFinanceDropdown()"><span class="dashicons dashicons-money-alt"></span> المعاملات المالية <span class="dashicons dashicons-arrow-down-alt2" style="font-size: 10px;"></span></button>
                 <div id="workedia-finance-dropdown" style="display:none; position:absolute; left:0; top:100%; background:white; border:1px solid #eee; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:100; min-width:200px; padding:10px 0;">
-                    <?php if (current_user_can('workedia_manage_finance')): ?>
-                        <a href="javascript:smOpenFinanceModal(<?php echo $member->id; ?>)" class="workedia-dropdown-item"><span class="dashicons dashicons-plus"></span> تأكيد سداد دفعة</a>
+                    <?php if (current_user_can('manage_options')): ?>
+                        <a href="javascript:workediaOpenFinanceModal(<?php echo $member->id; ?>)" class="workedia-dropdown-item"><span class="dashicons dashicons-plus"></span> تأكيد سداد دفعة</a>
                     <?php endif; ?>
                     <a href="<?php echo add_query_arg('workedia_tab', 'financial-logs'); ?>&member_search=<?php echo urlencode($member->national_id); ?>" class="workedia-dropdown-item"><span class="dashicons dashicons-media-spreadsheet"></span> سجل الفواتير والعمليات</a>
                 </div>
             </div>
 
-            <?php if (!$is_workedia_staff || current_user_can('workedia_print_reports')): ?>
+            <?php if (!$is_subscriber || current_user_can('manage_options')): ?>
                 <a href="<?php echo admin_url('admin-ajax.php?action=workedia_print&print_type=id_card&member_id='.$member->id); ?>" target="_blank" class="workedia-btn" style="background: #27ae60; width: auto; text-decoration:none; display:flex; align-items:center; gap:8px;"><span class="dashicons dashicons-id-alt"></span> طباعة الكارنيه</a>
             <?php endif; ?>
             <?php if ($is_sys_manager): ?>
@@ -90,10 +90,10 @@ $acc_status = Workedia_Finance::get_member_status($member->id);
 
     <!-- Profile Tabs -->
     <div class="workedia-tabs-wrapper" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-        <button class="workedia-tab-btn workedia-active" onclick="smOpenInternalTab('profile-info', this)"><span class="dashicons dashicons-admin-users"></span> بيانات العضوية</button>
-        <button class="workedia-tab-btn" onclick="smOpenInternalTab('finance-management', this)"><span class="dashicons dashicons-money-alt"></span> الإدارة المالية</button>
-        <button class="workedia-tab-btn" onclick="smOpenInternalTab('document-vault', this); smLoadDocuments();"><span class="dashicons dashicons-portfolio"></span> الأرشيف والمستندات</button>
-        <button class="workedia-tab-btn" onclick="smOpenInternalTab('member-chat', this); setTimeout(() => selectConversation(<?php echo $member->id; ?>, '<?php echo esc_js($member->name); ?>', <?php echo $member->wp_user_id ?: 0; ?>), 100);"><span class="dashicons dashicons-email"></span> المراسلات والشكاوى</button>
+        <button class="workedia-tab-btn workedia-active" onclick="workediaOpenInternalTab('profile-info', this)"><span class="dashicons dashicons-admin-users"></span> بيانات العضوية</button>
+        <button class="workedia-tab-btn" onclick="workediaOpenInternalTab('finance-management', this)"><span class="dashicons dashicons-money-alt"></span> الإدارة المالية</button>
+        <button class="workedia-tab-btn" onclick="workediaOpenInternalTab('document-vault', this); workediaLoadDocuments();"><span class="dashicons dashicons-portfolio"></span> الأرشيف والمستندات</button>
+        <button class="workedia-tab-btn" onclick="workediaOpenInternalTab('member-chat', this); setTimeout(() => selectConversation(<?php echo $member->id; ?>, '<?php echo esc_js($member->name); ?>', <?php echo $member->wp_user_id ?: 0; ?>), 100);"><span class="dashicons dashicons-email"></span> المراسلات والشكاوى</button>
     </div>
 
     <div id="profile-info" class="workedia-internal-tab">
@@ -176,7 +176,7 @@ $acc_status = Workedia_Finance::get_member_status($member->id);
                                 </div>
                             </div>
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f5f9; display: flex; gap: 10px;">
-                                <?php if (current_user_can('workedia_print_reports')): ?>
+                                <?php if (current_user_can('manage_options')): ?>
                                     <a href="<?php echo admin_url('admin-ajax.php?action=workedia_print_license&member_id='.$member->id); ?>" target="_blank" class="workedia-btn workedia-btn-outline" style="height: 32px; font-size: 11px; width: auto;"><span class="dashicons dashicons-printer"></span> طباعة التصريح</a>
                                 <?php endif; ?>
                             </div>
@@ -216,7 +216,7 @@ $acc_status = Workedia_Finance::get_member_status($member->id);
                                 </div>
                             </div>
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f5f9; display: flex; gap: 10px;">
-                                <?php if (current_user_can('workedia_print_reports')): ?>
+                                <?php if (current_user_can('manage_options')): ?>
                                     <a href="<?php echo admin_url('admin-ajax.php?action=workedia_print_facility&member_id='.$member->id); ?>" target="_blank" class="workedia-btn workedia-btn-outline" style="height: 32px; font-size: 11px; width: auto;"><span class="dashicons dashicons-printer"></span> طباعة الترخيص</a>
                                 <?php endif; ?>
                             </div>
@@ -240,8 +240,8 @@ $acc_status = Workedia_Finance::get_member_status($member->id);
                     <div style="display: flex; justify-content: space-between;"><span>المبلغ المطلوب سداده:</span> <strong><?php echo number_format($finance['total_owed'], 2); ?></strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>إجمالي ما تم سداده:</span> <strong style="color:#38a169;"><?php echo number_format($finance['total_paid'], 2); ?></strong></div>
                 </div>
-                    <button onclick="smOpenFinanceModal(<?php echo $member->id; ?>)" class="workedia-btn" style="margin-top: 20px; background: var(--workedia-dark-color);">
-                        <?php echo ($is_workedia_staff && !current_user_can('workedia_manage_finance')) ? 'عرض كشف الحساب' : 'إدارة المدفوعات والفواتير'; ?>
+                    <button onclick="workediaOpenFinanceModal(<?php echo $member->id; ?>)" class="workedia-btn" style="margin-top: 20px; background: var(--workedia-dark-color);">
+                        <?php echo ($is_subscriber && !current_user_can('manage_options')) ? 'عرض كشف الحساب' : 'إدارة المدفوعات والفواتير'; ?>
                     </button>
                 </div>
             </div>
@@ -357,16 +357,16 @@ $acc_status = Workedia_Finance::get_member_status($member->id);
 </div>
 
 <script>
-function smToggleFinanceDropdown() {
+function workediaToggleFinanceDropdown() {
     const el = document.getElementById('workedia-finance-dropdown');
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
-function smTriggerPhotoUpload() {
+function workediaTriggerPhotoUpload() {
     document.getElementById('member-photo-input').click();
 }
 
-function smUploadMemberPhoto(memberId) {
+function workediaUploadMemberPhoto(memberId) {
     const file = document.getElementById('member-photo-input').files[0];
     if (!file) return;
 
@@ -381,14 +381,14 @@ function smUploadMemberPhoto(memberId) {
     .then(res => {
         if (res.success) {
             document.getElementById('member-photo-container').innerHTML = `<img src="${res.data.photo_url}" style="width:100%; height:100%; object-fit:cover;">`;
-            smShowNotification('تم تحديث الصورة الشخصية');
+            workediaShowNotification('تم تحديث الصورة الشخصية');
         } else {
             alert('فشل الرفع: ' + res.data);
         }
     });
 }
 
-function smOpenUpdateMemberRequestModal() {
+function workediaOpenUpdateMemberRequestModal() {
     document.getElementById('member-update-request-modal').style.display = 'flex';
 }
 
@@ -402,7 +402,7 @@ document.getElementById('member-update-request-form').onsubmit = function(e) {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم إرسال طلب التحديث بنجاح. سنقوم بمراجعته قريباً.');
+            workediaShowNotification('تم إرسال طلب التحديث بنجاح. سنقوم بمراجعته قريباً.');
             document.getElementById('member-update-request-modal').style.display = 'none';
         } else {
             alert('خطأ: ' + res.data);
@@ -428,7 +428,7 @@ function deleteMember(id, name) {
     });
 }
 
-window.editSmMember = function(s) {
+window.workediaEditMember = function(s) {
     document.getElementById('edit_member_id_hidden').value = s.id;
     document.getElementById('edit_name').value = s.name;
     document.getElementById('edit_national_id').value = s.national_id;
@@ -456,7 +456,7 @@ document.getElementById('edit-member-form').onsubmit = function(e) {
     fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: formData })
     .then(r => r.json()).then(res => {
         if(res.success) {
-            smShowNotification('تم تحديث البيانات بنجاح');
+            workediaShowNotification('تم تحديث البيانات بنجاح');
             setTimeout(() => location.reload(), 500);
         } else {
             alert(res.data);
@@ -466,7 +466,7 @@ document.getElementById('edit-member-form').onsubmit = function(e) {
 
 document.addEventListener('click', function(e) {
     const dropdown = document.getElementById('workedia-finance-dropdown');
-    const btn = document.querySelector('[onclick="smToggleFinanceDropdown()"]');
+    const btn = document.querySelector('[onclick="workediaToggleFinanceDropdown()"]');
     if (dropdown && !dropdown.contains(e.target) && btn && !btn.contains(e.target)) {
         dropdown.style.display = 'none';
     }

@@ -305,7 +305,7 @@
 }
 .workedia-dropdown-item:hover { background: var(--workedia-bg-light); color: var(--workedia-primary-color) !important; }
 
-@keyframes smFadeIn {
+@keyframes workediaFadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
@@ -352,7 +352,7 @@
 
 .workedia-actions-dropdown:hover .workedia-actions-content {
     display: block;
-    animation: smFadeIn 0.2s ease-out;
+    animation: workediaFadeIn 0.2s ease-out;
 }
 
 .workedia-action-item {
@@ -401,7 +401,7 @@
     margin-bottom: 20px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-    animation: smFadeIn 0.3s ease-out;
+    animation: workediaFadeIn 0.3s ease-out;
 }
 .workedia-verify-card-header {
     display: flex;

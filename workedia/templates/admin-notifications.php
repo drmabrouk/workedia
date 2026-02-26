@@ -41,9 +41,9 @@ $templates = [
 <div class="workedia-notifications-settings" dir="rtl">
 
     <div class="workedia-tabs-wrapper" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-        <button class="workedia-tab-btn workedia-active" onclick="smOpenSubTab('email-templates', this)">قوالب البريد</button>
-        <button class="workedia-tab-btn" onclick="smOpenSubTab('email-design', this)">تصميم الرسائل</button>
-        <button class="workedia-tab-btn" onclick="smOpenSubTab('email-logs', this)">سجل الرسائل المرسلة</button>
+        <button class="workedia-tab-btn workedia-active" onclick="workediaOpenSubTab('email-templates', this)">قوالب البريد</button>
+        <button class="workedia-tab-btn" onclick="workediaOpenSubTab('email-design', this)">تصميم الرسائل</button>
+        <button class="workedia-tab-btn" onclick="workediaOpenSubTab('email-logs', this)">سجل الرسائل المرسلة</button>
     </div>
 
     <!-- SubTab: Templates -->
@@ -54,7 +54,7 @@ $templates = [
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     <?php foreach ($templates as $type => $label): ?>
                         <li style="margin-bottom: 10px;">
-                            <button onclick="smLoadTemplate('<?php echo $type; ?>')" class="workedia-btn workedia-btn-outline" style="width: 100%; text-align: right; justify-content: flex-start;">
+                            <button onclick="workediaLoadTemplate('<?php echo $type; ?>')" class="workedia-btn workedia-btn-outline" style="width: 100%; text-align: right; justify-content: flex-start;">
                                 <span class="dashicons dashicons-email-alt" style="margin-left: 10px;"></span> <?php echo $label; ?>
                             </button>
                         </li>
@@ -196,14 +196,14 @@ $templates = [
 </div>
 
 <script>
-function smOpenSubTab(tabId, btn) {
+function workediaOpenSubTab(tabId, btn) {
     document.querySelectorAll('.workedia-sub-tab').forEach(t => t.style.display = 'none');
     document.getElementById(tabId).style.display = 'block';
     btn.parentElement.querySelectorAll('.workedia-tab-btn').forEach(b => b.classList.remove('workedia-active'));
     btn.classList.add('workedia-active');
 }
 
-function smLoadTemplate(type) {
+function workediaLoadTemplate(type) {
     const labels = <?php echo json_encode($templates); ?>;
     const formData = new FormData();
     formData.append('action', 'workedia_get_template_ajax');

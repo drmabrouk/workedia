@@ -4,9 +4,9 @@
         <div style="display: flex; gap: 10px;">
             <div style="position: relative;">
                 <span class="dashicons dashicons-search" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></span>
-                <input type="text" id="workedia-doc-search" placeholder="بحث في الأرشيف..." class="workedia-input" style="padding-right: 40px; width: 250px;" oninput="smLoadDocuments()">
+                <input type="text" id="workedia-doc-search" placeholder="بحث في الأرشيف..." class="workedia-input" style="padding-right: 40px; width: 250px;" oninput="workediaLoadDocuments()">
             </div>
-            <select id="workedia-doc-category" class="workedia-select" style="width: 150px;" onchange="smLoadDocuments()">
+            <select id="workedia-doc-category" class="workedia-select" style="width: 150px;" onchange="workediaLoadDocuments()">
                 <option value="">كافة التصنيفات</option>
                 <option value="licenses">التراخيص</option>
                 <option value="certificates">الشهادات</option>
@@ -14,7 +14,7 @@
                 <option value="other">مستندات أخرى</option>
             </select>
         </div>
-        <button onclick="smOpenUploadModal()" class="workedia-btn" style="width: auto; background: var(--workedia-primary-color);"><span class="dashicons dashicons-upload"></span> رفع مستند جديد</button>
+        <button onclick="workediaOpenUploadModal()" class="workedia-btn" style="width: auto; background: var(--workedia-primary-color);"><span class="dashicons dashicons-upload"></span> رفع مستند جديد</button>
     </div>
 
     <div id="workedia-documents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
@@ -26,7 +26,7 @@
 <!-- Upload Modal -->
 <div id="workedia-upload-doc-modal" class="workedia-modal-overlay">
     <div class="workedia-modal-content" style="max-width: 500px;">
-        <div class="workedia-modal-header"><h3>رفع مستند للأرشيف الإلكتروني</h3><button class="workedia-modal-close" onclick="smCloseUploadModal()">&times;</button></div>
+        <div class="workedia-modal-header"><h3>رفع مستند للأرشيف الإلكتروني</h3><button class="workedia-modal-close" onclick="workediaCloseUploadModal()">&times;</button></div>
         <form id="workedia-upload-doc-form" style="padding: 20px;">
             <input type="hidden" name="member_id" value="<?php echo $member_id; ?>">
             <div class="workedia-form-group">
@@ -57,9 +57,9 @@
         <div class="workedia-modal-header">
             <h3 id="workedia-viewer-title">عرض المستند</h3>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <button onclick="smShowDocLogs()" class="workedia-btn workedia-btn-outline" style="width:auto; height:32px; font-size:11px;">سجل النشاط</button>
+                <button onclick="workediaShowDocLogs()" class="workedia-btn workedia-btn-outline" style="width:auto; height:32px; font-size:11px;">سجل النشاط</button>
                 <a href="" id="workedia-viewer-download" target="_blank" class="workedia-btn" style="width:auto; height:32px; font-size:11px; background:#27ae60; text-decoration:none; display:flex; align-items:center;">تحميل</a>
-                <button class="workedia-modal-close" onclick="smCloseViewer()">&times;</button>
+                <button class="workedia-modal-close" onclick="workediaCloseViewer()">&times;</button>
             </div>
         </div>
         <div id="workedia-viewer-body" style="flex: 1; background: #525659; overflow: hidden; position: relative;">
@@ -90,10 +90,10 @@
 <script>
 let currentViewingDocId = null;
 
-function smOpenUploadModal() { document.getElementById('workedia-upload-doc-modal').style.display = 'flex'; }
-function smCloseUploadModal() { document.getElementById('workedia-upload-doc-modal').style.display = 'none'; }
+function workediaOpenUploadModal() { document.getElementById('workedia-upload-doc-modal').style.display = 'flex'; }
+function workediaCloseUploadModal() { document.getElementById('workedia-upload-doc-modal').style.display = 'none'; }
 
-function smLoadDocuments() {
+function workediaLoadDocuments() {
     const search = document.getElementById('workedia-doc-search').value;
     const category = document.getElementById('workedia-doc-category').value;
     const grid = document.getElementById('workedia-documents-grid');
@@ -112,10 +112,10 @@ function smLoadDocuments() {
                 const isPdf = doc.file_type.includes('pdf');
                 const icon = isPdf ? 'dashicons-pdf' : 'dashicons-format-image';
                 html += `
-                    <div class="workedia-doc-card" onclick="smViewDocument('${doc.file_url}', '${doc.title}', ${doc.id})">
+                    <div class="workedia-doc-card" onclick="workediaViewDocument('${doc.file_url}', '${doc.title}', ${doc.id})">
                         <span class="workedia-doc-category-tag">${catNames[doc.category]}</span>
-                        <?php if (current_user_can('workedia_manage_members') || $member->wp_user_id == get_current_user_id()): ?>
-                        <span class="workedia-doc-delete dashicons dashicons-trash" onclick="event.stopPropagation(); smDeleteDocument(${doc.id})"></span>
+                        <?php if (current_user_can('manage_options') || $member->wp_user_id == get_current_user_id()): ?>
+                        <span class="workedia-doc-delete dashicons dashicons-trash" onclick="event.stopPropagation(); workediaDeleteDocument(${doc.id})"></span>
                         <?php endif; ?>
                         <span class="workedia-doc-icon dashicons ${icon}"></span>
                         <span class="workedia-doc-title" title="${doc.title}">${doc.title}</span>
@@ -128,7 +128,7 @@ function smLoadDocuments() {
     });
 }
 
-function smViewDocument(url, title, id) {
+function workediaViewDocument(url, title, id) {
     currentViewingDocId = id;
     document.getElementById('workedia-viewer-title').innerText = title;
     document.getElementById('workedia-viewer-download').href = url;
@@ -143,15 +143,15 @@ function smViewDocument(url, title, id) {
     }
 
     document.getElementById('workedia-doc-viewer-modal').style.display = 'flex';
-    smLogAction(id, 'view');
+    workediaLogAction(id, 'view');
 }
 
-function smCloseViewer() {
+function workediaCloseViewer() {
     document.getElementById('workedia-doc-viewer-modal').style.display = 'none';
     document.getElementById('workedia-viewer-body').innerHTML = '';
 }
 
-function smDeleteDocument(id) {
+function workediaDeleteDocument(id) {
     if (!confirm('هل أنت متأكد من حذف هذا المستند نهائياً؟')) return;
     const fd = new FormData();
     fd.append('action', 'workedia_delete_document');
@@ -160,11 +160,11 @@ function smDeleteDocument(id) {
 
     fetch('<?php echo admin_url('admin-ajax.php'); ?>', { method: 'POST', body: fd })
     .then(r => r.json()).then(res => {
-        if (res.success) { smShowNotification('تم حذف المستند'); smLoadDocuments(); }
+        if (res.success) { workediaShowNotification('تم حذف المستند'); workediaLoadDocuments(); }
     });
 }
 
-function smShowDocLogs() {
+function workediaShowDocLogs() {
     const body = document.getElementById('workedia-doc-logs-body');
     body.innerHTML = 'جاري التحميل...';
     document.getElementById('workedia-doc-logs-modal').style.display = 'flex';
@@ -189,7 +189,7 @@ function smShowDocLogs() {
     });
 }
 
-function smLogAction(docId, action) {
+function workediaLogAction(docId, action) {
     if (action !== 'view') return; // upload/delete are handled server-side
     const fd = new FormData();
     fd.append('action', 'workedia_log_document_view');
@@ -210,9 +210,9 @@ document.getElementById('workedia-upload-doc-form').onsubmit = function(e) {
     .then(r => r.json()).then(res => {
         btn.disabled = false; btn.innerText = 'بدء الرفع والأرشفة';
         if (res.success) {
-            smShowNotification('تم أرشفة المستند بنجاح');
-            smCloseUploadModal();
-            smLoadDocuments();
+            workediaShowNotification('تم أرشفة المستند بنجاح');
+            workediaCloseUploadModal();
+            workediaLoadDocuments();
             this.reset();
         } else {
             alert(res.data);
@@ -220,5 +220,5 @@ document.getElementById('workedia-upload-doc-form').onsubmit = function(e) {
     });
 };
 
-smLoadDocuments();
+workediaLoadDocuments();
 </script>

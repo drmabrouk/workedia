@@ -38,7 +38,7 @@ $registry = $wpdb->get_results($wpdb->prepare(
 <div class="workedia-practice-licenses" dir="rtl">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
         <h3 style="margin:0;">إدارة تصاريح مزاولة المهنة</h3>
-        <button onclick="smOpenLicenseIssuanceModal()" class="workedia-btn" style="width:auto;">+ إصدار / تجديد تصريح</button>
+        <button onclick="workediaOpenLicenseIssuanceModal()" class="workedia-btn" style="width:auto;">+ إصدار / تجديد تصريح</button>
     </div>
 
     <div class="workedia-card-grid" style="margin-bottom: 30px;">
@@ -107,7 +107,7 @@ $registry = $wpdb->get_results($wpdb->prepare(
                     </td>
                     <td>
                         <div style="display:flex; gap:8px;">
-                            <button onclick="smEditLicense(<?php echo $m->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:28px; font-size:11px; width:auto; padding: 0 10px;">تعديل</button>
+                            <button onclick="workediaEditLicense(<?php echo $m->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:28px; font-size:11px; width:auto; padding: 0 10px;">تعديل</button>
                             <a href="<?php echo admin_url('admin-ajax.php?action=workedia_print_license&member_id='.$m->id); ?>" target="_blank" class="workedia-btn" style="height:28px; font-size:11px; width:auto; background:#111F35; padding: 0 10px; display:flex; align-items:center;">طباعة</a>
                         </div>
                     </td>
@@ -153,14 +153,14 @@ $registry = $wpdb->get_results($wpdb->prepare(
 </div>
 
 <script>
-function smOpenLicenseIssuanceModal() {
+function workediaOpenLicenseIssuanceModal() {
     document.getElementById('workedia-license-form').reset();
     document.getElementById('workedia-license-modal').style.display = 'flex';
     document.getElementById('lic_issue').value = '<?php echo date('Y-m-d'); ?>';
-    smCalculateExpiry('lic_issue', 'lic_expiry');
+    workediaCalculateExpiry('lic_issue', 'lic_expiry');
 }
 
-function smCalculateExpiry(startId, endId) {
+function workediaCalculateExpiry(startId, endId) {
     const startDate = document.getElementById(startId).value;
     if (startDate) {
         const date = new Date(startDate);
@@ -170,7 +170,7 @@ function smCalculateExpiry(startId, endId) {
 }
 
 document.getElementById('lic_issue').addEventListener('change', function() {
-    smCalculateExpiry('lic_issue', 'lic_expiry');
+    workediaCalculateExpiry('lic_issue', 'lic_expiry');
 });
 
 document.getElementById('license_member_select').addEventListener('change', function() {
@@ -182,7 +182,7 @@ document.getElementById('license_member_select').addEventListener('change', func
         if (opt.dataset.expiry) {
             document.getElementById('lic_expiry').value = opt.dataset.expiry;
         } else {
-            smCalculateExpiry('lic_issue', 'lic_expiry');
+            workediaCalculateExpiry('lic_issue', 'lic_expiry');
         }
     }
 });
@@ -190,11 +190,11 @@ document.getElementById('license_member_select').addEventListener('change', func
 window.addEventListener('load', function() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('action') === 'new') {
-        smOpenLicenseIssuanceModal();
+        workediaOpenLicenseIssuanceModal();
     }
 });
 
-function smEditLicense(memberId) {
+function workediaEditLicense(memberId) {
     const select = document.getElementById('license_member_select');
     select.value = memberId;
     select.dispatchEvent(new Event('change'));
@@ -211,10 +211,10 @@ document.getElementById('workedia-license-form').addEventListener('submit', func
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم حفظ بيانات الترخيص بنجاح');
+            workediaShowNotification('تم حفظ بيانات الترخيص بنجاح');
             setTimeout(() => location.reload(), 500);
         } else {
-            smShowNotification('خطأ: ' + res.data, true);
+            workediaShowNotification('خطأ: ' + res.data, true);
         }
     });
 });

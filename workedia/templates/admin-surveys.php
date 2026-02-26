@@ -2,7 +2,7 @@
 <div class="workedia-surveys-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <h3 style="margin:0;">إدارة استطلاعات الرأي</h3>
-        <button class="workedia-btn" onclick="smOpenNewSurveyModal()" style="width: auto;">+ إنشاء استطلاع جديد</button>
+        <button class="workedia-btn" onclick="workediaOpenNewSurveyModal()" style="width: auto;">+ إنشاء استطلاع جديد</button>
     </div>
 
     <div class="workedia-table-container">
@@ -21,14 +21,14 @@
                 <?php
                 $surveys = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}workedia_surveys ORDER BY created_at DESC");
                 $user = wp_get_current_user();
-                $is_workedia_admin = in_array('workedia_admin', (array)$user->roles);
+                $is_administrator = in_array('administrator', (array)$user->roles);
                 $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
                 foreach ($surveys as $s):
                     $questions = json_decode($s->questions, true);
 
                     $resp_where = $wpdb->prepare("survey_id = %d", $s->id);
-                    if ($is_workedia_admin && $my_gov) {
+                    if ($is_administrator && $my_gov) {
                         $resp_where .= $wpdb->prepare(" AND (
                             EXISTS (SELECT 1 FROM {$wpdb->prefix}usermeta um WHERE um.user_id = user_id AND um.meta_key = 'workedia_governorate' AND um.meta_value = %s)
                             OR EXISTS (SELECT 1 FROM {$wpdb->prefix}workedia_members m WHERE m.wp_user_id = user_id AND m.governorate = %s)
@@ -41,8 +41,8 @@
                     <td>
                         <?php
                         if ($s->recipients === 'all') echo 'الجميع';
-                        elseif ($s->recipients === 'workedia_member') echo 'الأعضاء';
-                        elseif ($s->recipients === 'workedia_member') echo 'أعضاء Workedia';
+                        elseif ($s->recipients === 'subscriber') echo 'الأعضاء';
+                        elseif ($s->recipients === 'subscriber') echo 'أعضاء Workedia';
                         else echo esc_html($s->recipients);
                         ?>
                     </td>
@@ -53,13 +53,13 @@
                         </span>
                     </td>
                     <td>
-                        <button class="workedia-btn workedia-btn-outline" onclick="smViewSurveyResults(<?php echo $s->id; ?>, '<?php echo esc_js($s->title); ?>')" style="padding: 2px 10px; font-size: 11px;">
+                        <button class="workedia-btn workedia-btn-outline" onclick="workediaViewSurveyResults(<?php echo $s->id; ?>, '<?php echo esc_js($s->title); ?>')" style="padding: 2px 10px; font-size: 11px;">
                             <?php echo $responses_count; ?> ردود
                         </button>
                     </td>
                     <td>
                         <?php if ($s->status === 'active'): ?>
-                            <button class="workedia-btn workedia-btn-outline" onclick="smCancelSurvey(<?php echo $s->id; ?>)" style="color: #e53e3e; border-color: #feb2b2; padding: 2px 10px; font-size: 11px;">إلغاء</button>
+                            <button class="workedia-btn workedia-btn-outline" onclick="workediaCancelSurvey(<?php echo $s->id; ?>)" style="color: #e53e3e; border-color: #feb2b2; padding: 2px 10px; font-size: 11px;">إلغاء</button>
                         <?php endif; ?>
                         <a href="<?php echo admin_url('admin-ajax.php?action=workedia_export_survey_results&id='.$s->id); ?>" class="workedia-btn workedia-btn-outline" style="padding: 2px 10px; font-size: 11px;">CSV</a>
                     </td>
@@ -80,7 +80,7 @@
         <div class="workedia-modal-body">
             <div class="workedia-form-group">
                 <label class="workedia-label">استخدام نموذج جاهز (اختياري):</label>
-                <select id="survey_template_select" class="workedia-select" onchange="smLoadSurveyTemplate(this.value)">
+                <select id="survey_template_select" class="workedia-select" onchange="workediaLoadSurveyTemplate(this.value)">
                     <option value="">-- اختر نموذجاً --</option>
                     <option value="member_satisfaction">استبيان رضا الأعضاء عن الخدمات النقابية</option>
                     <option value="staff_feedback">استبيان تقييم الكفاءة المهنية</option>
@@ -95,9 +95,9 @@
                 <label class="workedia-label">الفئة المستهدفة:</label>
                 <select id="survey_recipients" class="workedia-select">
                     <option value="all">الجميع</option>
-                    <option value="workedia_member">الأعضاء فقط</option>
-                    <option value="workedia_member">أعضاء Workedia فقط</option>
-                    <option value="workedia_admin">مسؤولو Workedia فقط</option>
+                    <option value="subscriber">الأعضاء فقط</option>
+                    <option value="subscriber">أعضاء Workedia فقط</option>
+                    <option value="administrator">مسؤولو Workedia فقط</option>
                 </select>
             </div>
             <div id="survey-questions-container">
@@ -107,10 +107,10 @@
                     <button class="workedia-btn workedia-btn-outline" style="color:red; border-color:red; width:40px;" onclick="this.parentElement.remove()">×</button>
                 </div>
             </div>
-            <button class="workedia-btn workedia-btn-outline" onclick="smAddSurveyQuestion()" style="margin-top:10px;">+ إضافة سؤال آخر</button>
+            <button class="workedia-btn workedia-btn-outline" onclick="workediaAddSurveyQuestion()" style="margin-top:10px;">+ إضافة سؤال آخر</button>
 
             <div style="margin-top:30px; display:flex; gap:10px;">
-                <button class="workedia-btn" onclick="smSaveSurvey()" style="flex:1;">نشر الاستطلاع</button>
+                <button class="workedia-btn" onclick="workediaSaveSurvey()" style="flex:1;">نشر الاستطلاع</button>
                 <button class="workedia-btn workedia-btn-outline" onclick="this.closest('.workedia-modal-overlay').style.display='none'" style="flex:1;">إلغاء</button>
             </div>
         </div>
@@ -134,7 +134,7 @@
 const surveyTemplates = {
     'member_satisfaction': {
         title: 'استبيان رضا الأعضاء عن الخدمات النقابية',
-        recipients: 'workedia_member',
+        recipients: 'subscriber',
         questions: [
             'ما مدى رضاك عن نظافة المقر العام للWorkedia؟',
             'هل الخدمات النقابية المقدمة تلبي احتياجاتك؟',
@@ -145,7 +145,7 @@ const surveyTemplates = {
     },
     'staff_feedback': {
         title: 'استبيان تقييم الكفاءة المهنية',
-        recipients: 'workedia_member',
+        recipients: 'subscriber',
         questions: [
             'مدى التزام الموظف بمعايير الجودة المهنية؟',
             'استخدام الوسائل التقنية الحديثة في إنجاز المهام؟',
@@ -156,7 +156,7 @@ const surveyTemplates = {
     },
     'professional_environment': {
         title: 'استبيان جودة البيئة المهنية والمرافق',
-        recipients: 'workedia_member',
+        recipients: 'subscriber',
         questions: [
             'توفر الموارد المهنية اللازمة لأداء العمل؟',
             'مناسبة التجهيزات المكتبية والتقنية في Workedia؟',
@@ -167,7 +167,7 @@ const surveyTemplates = {
     }
 };
 
-function smLoadSurveyTemplate(key) {
+function workediaLoadSurveyTemplate(key) {
     if (!key || !surveyTemplates[key]) return;
     const t = surveyTemplates[key];
     document.getElementById('survey_title').value = t.title;
@@ -188,11 +188,11 @@ function smLoadSurveyTemplate(key) {
     });
 }
 
-function smOpenNewSurveyModal() {
+function workediaOpenNewSurveyModal() {
     document.getElementById('new-survey-modal').style.display = 'flex';
 }
 
-function smAddSurveyQuestion() {
+function workediaAddSurveyQuestion() {
     const container = document.getElementById('survey-questions-container');
     const div = document.createElement('div');
     div.className = 'survey-q-item';
@@ -204,7 +204,7 @@ function smAddSurveyQuestion() {
     container.appendChild(div);
 }
 
-function smSaveSurvey() {
+function workediaSaveSurvey() {
     const title = document.getElementById('survey_title').value;
     const recipients = document.getElementById('survey_recipients').value;
     const inputs = document.querySelectorAll('.survey-q-input');
@@ -214,7 +214,7 @@ function smSaveSurvey() {
     });
 
     if (!title || questions.length === 0) {
-        smShowNotification('يرجى إدخال العنوان وسؤال واحد على الأقل', true);
+        workediaShowNotification('يرجى إدخال العنوان وسؤال واحد على الأقل', true);
         return;
     }
 
@@ -229,15 +229,15 @@ function smSaveSurvey() {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم نشر الاستطلاع بنجاح');
+            workediaShowNotification('تم نشر الاستطلاع بنجاح');
             location.reload();
         } else {
-            smShowNotification('خطأ: ' + res.data, true);
+            workediaShowNotification('خطأ: ' + res.data, true);
         }
     });
 }
 
-function smCancelSurvey(id) {
+function workediaCancelSurvey(id) {
     if (!confirm('هل أنت متأكد من إلغاء هذا الاستطلاع؟ لن يتمكن أحد من الرد عليه بعد الآن.')) return;
 
     const formData = new FormData();
@@ -249,13 +249,13 @@ function smCancelSurvey(id) {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم إلغاء الاستطلاع');
+            workediaShowNotification('تم إلغاء الاستطلاع');
             location.reload();
         }
     });
 }
 
-function smViewSurveyResults(id, title) {
+function workediaViewSurveyResults(id, title) {
     document.getElementById('res-modal-title').innerText = 'نتائج: ' + title;
     const body = document.getElementById('survey-results-body');
     body.innerHTML = '<p style="text-align:center;">جاري تحميل النتائج...</p>';

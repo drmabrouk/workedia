@@ -303,7 +303,7 @@
 }
 .workedia-dropdown-item:hover { background: var(--workedia-bg-light); color: var(--workedia-primary-color) !important; }
 
-@keyframes smFadeIn {
+@keyframes workediaFadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }

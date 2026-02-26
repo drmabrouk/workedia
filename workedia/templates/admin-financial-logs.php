@@ -3,7 +3,7 @@
 global $wpdb;
 
 $user = wp_get_current_user();
-$is_sys_manager = current_user_can('workedia_full_access') || current_user_can('manage_options');
+$is_sys_manager = current_user_can('manage_options');
 
 if (!$is_sys_manager) {
     echo '<div class="workedia-alert workedia-alert-danger">عذراً، هذا القسم مخصص لمدير النظام فقط ولا يمكن الوصول إليه.</div>';
@@ -13,7 +13,7 @@ if (!$is_sys_manager) {
 $where = "1=1";
 
 // Governorate filtering for non-global admins
-if (!current_user_can('workedia_full_access') && !current_user_can('manage_options')) {
+if (!current_user_can('manage_options') && !current_user_can('manage_options')) {
     $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
     if ($my_gov) {
         $where .= $wpdb->prepare(" AND EXISTS (SELECT 1 FROM {$wpdb->prefix}workedia_members m WHERE m.id = p.member_id AND m.governorate = %s)", $my_gov);
@@ -117,8 +117,8 @@ $total_period_amount = array_reduce($payments, function($carry, $item) { return 
                             <td>
                                 <div style="display:flex; gap:5px;">
                                     <a href="<?php echo admin_url('admin-ajax.php?action=workedia_print_invoice&payment_id='.$p->id); ?>" target="_blank" class="workedia-btn" style="height:25px; padding:0 8px; font-size:10px; width:auto; background:#2c3e50; text-decoration:none; display:flex; align-items:center; gap:4px;"><span class="dashicons dashicons-pdf" style="font-size:14px;"></span> فاتورة</a>
-                                    <?php if (current_user_can('workedia_full_access') || current_user_can('manage_options')): ?>
-                                        <button onclick="smDeleteTransaction(<?php echo $p->id; ?>)" class="workedia-btn workedia-btn-outline" style="color:#e53e3e; border-color:#feb2b2; padding:2px 8px; font-size:10px; width:auto;">حذف</button>
+                                    <?php if (current_user_can('manage_options')): ?>
+                                        <button onclick="workediaDeleteTransaction(<?php echo $p->id; ?>)" class="workedia-btn workedia-btn-outline" style="color:#e53e3e; border-color:#feb2b2; padding:2px 8px; font-size:10px; width:auto;">حذف</button>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -131,7 +131,7 @@ $total_period_amount = array_reduce($payments, function($carry, $item) { return 
 </div>
 
 <script>
-function smDeleteTransaction(id) {
+function workediaDeleteTransaction(id) {
     if (!confirm('هل أنت متأكد من حذف هذه العملية المالية؟ سيتم إزالتها نهائياً من السجل.')) return;
 
     const formData = new FormData();
@@ -143,7 +143,7 @@ function smDeleteTransaction(id) {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم حذف العملية بنجاح');
+            workediaShowNotification('تم حذف العملية بنجاح');
             location.reload();
         } else {
             alert('خطأ: ' + res.data);

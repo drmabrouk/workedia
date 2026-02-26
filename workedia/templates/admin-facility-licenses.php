@@ -39,7 +39,7 @@ $registry = $wpdb->get_results($wpdb->prepare(
 <div class="workedia-facility-licenses" dir="rtl">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
         <h3 style="margin:0;">إدارة تراخيص المنشآت</h3>
-        <button onclick="smOpenFacilityModal()" class="workedia-btn" style="width:auto;">+ تسجيل / تجديد منشأة</button>
+        <button onclick="workediaOpenFacilityModal()" class="workedia-btn" style="width:auto;">+ تسجيل / تجديد منشأة</button>
     </div>
 
     <div class="workedia-card-grid" style="margin-bottom: 30px;">
@@ -105,7 +105,7 @@ $registry = $wpdb->get_results($wpdb->prepare(
                     </td>
                     <td>
                         <div style="display:flex; gap:8px;">
-                            <button onclick="smEditFacility(<?php echo $m->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:28px; font-size:11px; width:auto; padding: 0 10px;">تعديل</button>
+                            <button onclick="workediaEditFacility(<?php echo $m->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:28px; font-size:11px; width:auto; padding: 0 10px;">تعديل</button>
                             <a href="<?php echo admin_url('admin-ajax.php?action=workedia_print_facility&member_id='.$m->id); ?>" target="_blank" class="workedia-btn" style="height:28px; font-size:11px; width:auto; background:#111F35; padding: 0 10px; display:flex; align-items:center;">طباعة</a>
                         </div>
                     </td>
@@ -167,14 +167,14 @@ $registry = $wpdb->get_results($wpdb->prepare(
 </div>
 
 <script>
-function smOpenFacilityModal() {
+function workediaOpenFacilityModal() {
     document.getElementById('workedia-facility-form').reset();
     document.getElementById('workedia-facility-modal').style.display = 'flex';
     document.getElementById('fac_issue').value = '<?php echo date('Y-m-d'); ?>';
-    smCalculateFacilityExpiry();
+    workediaCalculateFacilityExpiry();
 }
 
-function smCalculateFacilityExpiry() {
+function workediaCalculateFacilityExpiry() {
     const startDate = document.getElementById('fac_issue').value;
     if (startDate) {
         const date = new Date(startDate);
@@ -183,7 +183,7 @@ function smCalculateFacilityExpiry() {
     }
 }
 
-document.getElementById('fac_issue').addEventListener('change', smCalculateFacilityExpiry);
+document.getElementById('fac_issue').addEventListener('change', workediaCalculateFacilityExpiry);
 
 document.getElementById('facility_owner_select').addEventListener('change', function() {
     const opt = this.options[this.selectedIndex];
@@ -196,7 +196,7 @@ document.getElementById('facility_owner_select').addEventListener('change', func
         if (opt.dataset.fexpiry) {
             document.getElementById('fac_expiry').value = opt.dataset.fexpiry;
         } else {
-            smCalculateFacilityExpiry();
+            workediaCalculateFacilityExpiry();
         }
 
         document.getElementById('fac_addr').value = opt.dataset.faddr || '';
@@ -206,11 +206,11 @@ document.getElementById('facility_owner_select').addEventListener('change', func
 window.addEventListener('load', function() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('action') === 'new') {
-        smOpenFacilityModal();
+        workediaOpenFacilityModal();
     }
 });
 
-function smEditFacility(memberId) {
+function workediaEditFacility(memberId) {
     const select = document.getElementById('facility_owner_select');
     select.value = memberId;
     select.dispatchEvent(new Event('change'));
@@ -227,10 +227,10 @@ document.getElementById('workedia-facility-form').addEventListener('submit', fun
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم حفظ بيانات المنشأة بنجاح');
+            workediaShowNotification('تم حفظ بيانات المنشأة بنجاح');
             setTimeout(() => location.reload(), 500);
         } else {
-            smShowNotification('خطأ: ' + res.data, true);
+            workediaShowNotification('خطأ: ' + res.data, true);
         }
     });
 });

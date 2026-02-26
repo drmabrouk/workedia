@@ -1,7 +1,7 @@
 <?php if (!defined('ABSPATH')) exit; ?>
 <?php
 $user = wp_get_current_user();
-$has_full_access = current_user_can('workedia_full_access') || current_user_can('manage_options');
+$has_full_access = current_user_can('manage_options');
 $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
 global $wpdb;
@@ -105,9 +105,9 @@ $active_sub_tab = $_GET['sub_tab'] ?? 'documents';
                                 <td style="font-size: 11px;"><?php echo $d->file_type; ?></td>
                                 <td>
                                     <div style="display: flex; gap: 8px;">
-                                        <button onclick="smGlobalViewDoc('<?php echo $d->file_url; ?>', '<?php echo esc_js($d->title); ?>', <?php echo $d->id; ?>)" class="workedia-btn" style="height:28px; font-size:11px; width:auto; background:#111F35; padding: 0 10px;">عرض</button>
+                                        <button onclick="workediaGlobalViewDoc('<?php echo $d->file_url; ?>', '<?php echo esc_js($d->title); ?>', <?php echo $d->id; ?>)" class="workedia-btn" style="height:28px; font-size:11px; width:auto; background:#111F35; padding: 0 10px;">عرض</button>
                                         <?php if ($has_full_access): ?>
-                                            <button onclick="smDeleteArchiveDoc(<?php echo $d->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:28px; font-size:11px; width:auto; color:#e53e3e; border-color:#feb2b2; padding: 0 10px;">حذف</button>
+                                            <button onclick="workediaDeleteArchiveDoc(<?php echo $d->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:28px; font-size:11px; width:auto; color:#e53e3e; border-color:#feb2b2; padding: 0 10px;">حذف</button>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -125,7 +125,7 @@ $active_sub_tab = $_GET['sub_tab'] ?? 'documents';
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <h3 style="margin: 0; color: #111F35;">سجل كافة المستندات الصادرة من النظام</h3>
                 <div style="position: relative;">
-                    <input type="text" id="pub_log_search" placeholder="بحث بالرقم المسلسل أو العنوان..." class="workedia-input" style="width: 350px; padding-left: 40px;" oninput="smFilterLogs()">
+                    <input type="text" id="pub_log_search" placeholder="بحث بالرقم المسلسل أو العنوان..." class="workedia-input" style="width: 350px; padding-left: 40px;" oninput="workediaFilterLogs()">
                     <span class="dashicons dashicons-search" style="position: absolute; left: 12px; top: 12px; color: #94a3b8;"></span>
                 </div>
             </div>
@@ -156,8 +156,8 @@ $active_sub_tab = $_GET['sub_tab'] ?? 'documents';
                                 <td><?php echo esc_html($d->creator_name); ?></td>
                                 <td>
                                     <div style="display: flex; gap: 5px;">
-                                        <button onclick="smDownloadGenerated(<?php echo $d->id; ?>, 'pdf')" class="workedia-btn" style="width:auto; height:28px; font-size:11px; background:#111F35;">PDF</button>
-                                        <button onclick="smDownloadGenerated(<?php echo $d->id; ?>, 'image')" class="workedia-btn workedia-btn-outline" style="width:auto; height:28px; font-size:11px;">صورة</button>
+                                        <button onclick="workediaDownloadGenerated(<?php echo $d->id; ?>, 'pdf')" class="workedia-btn" style="width:auto; height:28px; font-size:11px; background:#111F35;">PDF</button>
+                                        <button onclick="workediaDownloadGenerated(<?php echo $d->id; ?>, 'image')" class="workedia-btn workedia-btn-outline" style="width:auto; height:28px; font-size:11px;">صورة</button>
                                     </div>
                                 </td>
                             </tr>
@@ -167,14 +167,14 @@ $active_sub_tab = $_GET['sub_tab'] ?? 'documents';
             </div>
         </div>
         <script>
-        function smFilterLogs() {
+        function workediaFilterLogs() {
             const val = document.getElementById('pub_log_search').value.toLowerCase();
             const rows = document.querySelectorAll('#pub-logs-table tbody tr');
             rows.forEach(row => {
                 row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
             });
         }
-        function smDownloadGenerated(id, format) {
+        function workediaDownloadGenerated(id, format) {
             window.open('<?php echo admin_url('admin-ajax.php'); ?>?action=workedia_print_pub_doc&id=' + id + '&format=' + format, '_blank');
         }
         </script>
@@ -235,7 +235,7 @@ $active_sub_tab = $_GET['sub_tab'] ?? 'documents';
                                     <div style="display: flex; gap: 5px;">
                                         <a href="<?php echo admin_url('admin-ajax.php?action=workedia_print_invoice&payment_id='.$p->id); ?>" target="_blank" class="workedia-btn" style="height:25px; padding:0 8px; font-size:10px; width:auto; background:#2c3e50; text-decoration:none; display:flex; align-items:center;">فاتورة</a>
                                         <?php if ($has_full_access): ?>
-                                            <button onclick="smDeleteArchivePayment(<?php echo $p->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:25px; font-size:10px; width:auto; color:#e53e3e; border-color:#feb2b2; padding: 0 8px;">حذف</button>
+                                            <button onclick="workediaDeleteArchivePayment(<?php echo $p->id; ?>)" class="workedia-btn workedia-btn-outline" style="height:25px; font-size:10px; width:auto; color:#e53e3e; border-color:#feb2b2; padding: 0 8px;">حذف</button>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -262,7 +262,7 @@ $active_sub_tab = $_GET['sub_tab'] ?? 'documents';
 </div>
 
 <script>
-function smGlobalViewDoc(url, title, id) {
+function workediaGlobalViewDoc(url, title, id) {
     document.getElementById('workedia-global-viewer-title').innerText = title;
     document.getElementById('workedia-global-viewer-download').href = url;
     const body = document.getElementById('workedia-global-viewer-body');
@@ -275,7 +275,7 @@ function smGlobalViewDoc(url, title, id) {
     document.getElementById('workedia-global-viewer-modal').style.display = 'flex';
 }
 
-function smDeleteArchiveDoc(id) {
+function workediaDeleteArchiveDoc(id) {
     if (!confirm('هل أنت متأكد من حذف هذا المستند نهائياً؟')) return;
     const fd = new FormData();
     fd.append('action', 'workedia_delete_document');
@@ -284,7 +284,7 @@ function smDeleteArchiveDoc(id) {
     fetch(ajaxurl, { method: 'POST', body: fd }).then(r => r.json()).then(res => { if (res.success) location.reload(); });
 }
 
-function smDeleteArchivePayment(id) {
+function workediaDeleteArchivePayment(id) {
     if (!confirm('هل أنت متأكد من حذف هذه العملية المالية نهائياً؟')) return;
     const fd = new FormData();
     fd.append('action', 'workedia_delete_transaction_ajax');

@@ -2,7 +2,7 @@
 <?php
 $user = wp_get_current_user();
 $roles = (array)$user->roles;
-$is_official = in_array('workedia_admin', $roles) || in_array('workedia_system_admin', $roles) || in_array('administrator', $roles);
+$is_official = in_array('administrator', $roles);
 
 $member_id = 0;
 global $wpdb;
@@ -19,15 +19,15 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <h2 style="margin:0; font-weight: 800; color: var(--workedia-dark-color);">الخدمات الرقمية</h2>
         <?php if ($is_official): ?>
-            <button onclick="smOpenAddServiceModal()" class="workedia-btn" style="width:auto;">+ إضافة خدمة جديدة</button>
+            <button onclick="workediaOpenAddServiceModal()" class="workedia-btn" style="width:auto;">+ إضافة خدمة جديدة</button>
         <?php endif; ?>
     </div>
 
     <div class="workedia-tabs-wrapper" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-        <button class="workedia-tab-btn workedia-active" onclick="smOpenInternalTab('available-services', this)">الخدمات المتاحة</button>
-        <button class="workedia-tab-btn" onclick="smOpenInternalTab('requests-history', this)"><?php echo $is_official ? 'طلبات الأعضاء' : 'طلباتي السابقة'; ?></button>
+        <button class="workedia-tab-btn workedia-active" onclick="workediaOpenInternalTab('available-services', this)">الخدمات المتاحة</button>
+        <button class="workedia-tab-btn" onclick="workediaOpenInternalTab('requests-history', this)"><?php echo $is_official ? 'طلبات الأعضاء' : 'طلباتي السابقة'; ?></button>
         <?php if ($is_official): ?>
-            <button class="workedia-tab-btn" onclick="smOpenInternalTab('deleted-services', this)">الخدمات المحذوفة</button>
+            <button class="workedia-tab-btn" onclick="workediaOpenInternalTab('deleted-services', this)">الخدمات المحذوفة</button>
         <?php endif; ?>
     </div>
 
@@ -111,7 +111,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
                             <td><?php echo $log->created_at; ?></td>
                             <td><?php echo $user_info ? $user_info->display_name : 'نظام'; ?></td>
                             <td>
-                                <button onclick="smRollbackLog(<?php echo $log->id; ?>)" class="workedia-btn" style="width: auto; padding: 5px 15px; background: #38a169;">استعادة</button>
+                                <button onclick="workediaRollbackLog(<?php echo $log->id; ?>)" class="workedia-btn" style="width: auto; padding: 5px 15px; background: #38a169;">استعادة</button>
                             </td>
                         </tr>
                     <?php endforeach; endif; ?>
@@ -200,7 +200,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
                 <label class="workedia-label">حقول إضافية مطلوبة عند الطلب:</label>
                 <div id="workedia-required-fields-builder" style="background: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
                     <div id="fields-list"></div>
-                    <button type="button" onclick="smAddRequiredField()" class="workedia-btn workedia-btn-outline" style="width: 100%; margin-top: 10px; font-size: 12px; background: #fff;">+ إضافة حقل إضافي</button>
+                    <button type="button" onclick="workediaAddRequiredField()" class="workedia-btn workedia-btn-outline" style="width: 100%; margin-top: 10px; font-size: 12px; background: #fff;">+ إضافة حقل إضافي</button>
                 </div>
             </div>
 
@@ -257,7 +257,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
 
 <script>
 (function($) {
-    window.smRefreshServicesList = function() {
+    window.workediaRefreshServicesList = function() {
         const container = $('#available-services');
         container.css('opacity', '0.5');
         fetch(ajaxurl + '?action=workedia_get_services_html&nonce=<?php echo wp_create_nonce("workedia_admin_action"); ?>&t=' + Date.now())
@@ -272,7 +272,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
             });
     };
 
-    window.smAddRequiredField = function(data = {name: '', label: '', type: 'text'}) {
+    window.workediaAddRequiredField = function(data = {name: '', label: '', type: 'text'}) {
         const container = $('#fields-list');
         const id = Date.now() + Math.random();
         const html = `
@@ -290,7 +290,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         container.append(html);
     };
 
-    window.smOpenAddServiceModal = function() {
+    window.workediaOpenAddServiceModal = function() {
         const modal = $('#add-service-modal');
         modal.find('h3').text('إضافة خدمة رقمية جديدة');
         const form = $('#add-service-form');
@@ -321,11 +321,11 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
             fd.append('nonce', '<?php echo wp_create_nonce("workedia_admin_action"); ?>');
             fetch(ajaxurl, {method: 'POST', body: fd}).then(r=>r.json()).then(res=>{
                 if (res.success) {
-                    smShowNotification('تم إضافة الخدمة بنجاح');
-                    smRefreshServicesList();
+                    workediaShowNotification('تم إضافة الخدمة بنجاح');
+                    workediaRefreshServicesList();
                     $('#add-service-modal').fadeOut();
                 } else {
-                    smShowNotification(res.data, true);
+                    workediaShowNotification(res.data, true);
                 }
             });
         });
@@ -339,7 +339,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         fd.append('status', status);
         fd.append('nonce', '<?php echo wp_create_nonce("workedia_admin_action"); ?>');
         fetch(ajaxurl, {method: 'POST', body: fd}).then(r=>r.json()).then(res=>{
-            if (res.success) smRefreshServicesList();
+            if (res.success) workediaRefreshServicesList();
         });
     };
 
@@ -350,7 +350,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         fd.append('id', id);
         fd.append('nonce', '<?php echo wp_create_nonce("workedia_admin_action"); ?>');
         fetch(ajaxurl, {method: 'POST', body: fd}).then(r=>r.json()).then(res=>{
-            if (res.success) smRefreshServicesList();
+            if (res.success) workediaRefreshServicesList();
         });
     };
 
@@ -366,7 +366,7 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         if (s.required_fields) {
             try {
                 const fields = JSON.parse(s.required_fields);
-                fields.forEach(f => smAddRequiredField(f));
+                fields.forEach(f => workediaAddRequiredField(f));
             } catch(e) {}
         }
 
@@ -404,11 +404,11 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
 
             fetch(ajaxurl, {method: 'POST', body: fd}).then(r=>r.json()).then(res=>{
                 if (res.success) {
-                    smShowNotification('تم تحديث الخدمة بنجاح');
-                    smRefreshServicesList();
+                    workediaShowNotification('تم تحديث الخدمة بنجاح');
+                    workediaRefreshServicesList();
                     $('#add-service-modal').fadeOut();
                 } else {
-                    smShowNotification(res.data, true);
+                    workediaShowNotification(res.data, true);
                 }
             });
         });
@@ -462,10 +462,10 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
 
         fetch(ajaxurl, {method: 'POST', body: fd}).then(r=>r.json()).then(res=>{
             if (res.success) {
-                smShowNotification('تم تقديم الطلب بنجاح');
+                workediaShowNotification('تم تقديم الطلب بنجاح');
                 setTimeout(() => location.reload(), 1000);
             } else {
-                smShowNotification(res.data, true);
+                workediaShowNotification(res.data, true);
             }
         });
     });
@@ -492,15 +492,15 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         fd.append('nonce', '<?php echo wp_create_nonce("workedia_admin_action"); ?>');
         fetch(ajaxurl, {method: 'POST', body: fd}).then(r=>r.json()).then(res=>{
             if (res.success) {
-                smShowNotification('تم تحديث حالة الطلب');
+                workediaShowNotification('تم تحديث حالة الطلب');
                 setTimeout(() => location.reload(), 1000);
             } else {
-                smShowNotification(res.data, true);
+                workediaShowNotification(res.data, true);
             }
         });
     };
 
-    window.smRollbackLog = function(logId) {
+    window.workediaRollbackLog = function(logId) {
         if (!confirm('هل أنت متأكد من استعادة هذه الخدمة؟')) return;
         const fd = new FormData();
         fd.append('action', 'workedia_rollback_log_ajax');
@@ -508,11 +508,11 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         fd.append('nonce', '<?php echo wp_create_nonce("workedia_admin_action"); ?>');
         fetch(ajaxurl, {method: 'POST', body: fd}).then(r=>r.json()).then(res=>{
             if (res.success) {
-                smShowNotification('تمت الاستعادة بنجاح');
-                smRefreshServicesList();
+                workediaShowNotification('تمت الاستعادة بنجاح');
+                workediaRefreshServicesList();
                 location.reload();
             } else {
-                smShowNotification(res.data, true);
+                workediaShowNotification(res.data, true);
             }
         });
     };

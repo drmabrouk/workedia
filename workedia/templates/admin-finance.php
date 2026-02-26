@@ -107,7 +107,7 @@ foreach ($members as $m) {
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <button onclick="smOpenFinanceModal(<?php echo $m->id; ?>)" class="workedia-btn" style="height: 30px; font-size: 11px; width: auto; background: #111F35;">تفاصيل / سداد</button>
+                                <button onclick="workediaOpenFinanceModal(<?php echo $m->id; ?>)" class="workedia-btn" style="height: 30px; font-size: 11px; width: auto; background: #111F35;">تفاصيل / سداد</button>
                             </td>
                         </tr>
                     <?php endforeach; ?>

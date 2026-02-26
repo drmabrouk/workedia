@@ -20,10 +20,10 @@ $workedia = Workedia_Settings::get_workedia_info();
 
     <!-- Main Navigation Tabs -->
     <div class="workedia-tabs-wrapper" style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #edf2f7; padding-bottom: 0;">
-        <button class="workedia-tab-nav-btn workedia-active" onclick="smOpenInternalTab('create-document', this)">
+        <button class="workedia-tab-nav-btn workedia-active" onclick="workediaOpenInternalTab('create-document', this)">
             <span class="dashicons dashicons-edit"></span> إنشاء مستند جديد
         </button>
-        <button class="workedia-tab-nav-btn" onclick="smOpenInternalTab('identity-settings', this)">
+        <button class="workedia-tab-nav-btn" onclick="workediaOpenInternalTab('identity-settings', this)">
             <span class="dashicons dashicons-admin-generic"></span> إعدادات الهوية الرسمية
         </button>
         <a href="<?php echo add_query_arg(['workedia_tab' => 'global-archive', 'sub_tab' => 'issued']); ?>" class="workedia-tab-nav-btn" style="text-decoration:none;">
@@ -60,7 +60,7 @@ $workedia = Workedia_Settings::get_workedia_info();
                 <div id="pub-editor-toolbar" style="background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px 12px 0 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-bottom: none;">
 
                     <!-- FONT SELECT -->
-                    <select onchange="smExecCommand('fontName', this.value)" class="workedia-select" style="width: 140px; height: 36px; font-size: 12px;">
+                    <select onchange="workediaExecCommand('fontName', this.value)" class="workedia-select" style="width: 140px; height: 36px; font-size: 12px;">
                         <option value="Cairo">Cairo (عصري)</option>
                         <option value="Amiri">Amiri (كلاسيكي)</option>
                         <option value="Lateef">Lateef (فني)</option>
@@ -68,7 +68,7 @@ $workedia = Workedia_Settings::get_workedia_info();
                         <option value="Arial">Arial (عالمي)</option>
                     </select>
 
-                    <select id="editor-font-size" class="workedia-select" style="width: 80px; height: 36px; font-size: 12px;" onchange="smSetFontSize(this.value)">
+                    <select id="editor-font-size" class="workedia-select" style="width: 80px; height: 36px; font-size: 12px;" onchange="workediaSetFontSize(this.value)">
                         <option value="14px">14</option>
                         <option value="16px" selected>16</option>
                         <option value="18px">18</option>
@@ -79,25 +79,25 @@ $workedia = Workedia_Settings::get_workedia_info();
 
                     <div class="toolbar-divider"></div>
 
-                    <button onclick="smExecCommand('bold')" class="editor-tool-btn" title="عريض"><span class="dashicons dashicons-editor-bold"></span></button>
-                    <button onclick="smExecCommand('italic')" class="editor-tool-btn" title="مائل"><span class="dashicons dashicons-editor-italic"></span></button>
-                    <button onclick="smExecCommand('underline')" class="editor-tool-btn" title="تحته خط"><span class="dashicons dashicons-editor-underline"></span></button>
+                    <button onclick="workediaExecCommand('bold')" class="editor-tool-btn" title="عريض"><span class="dashicons dashicons-editor-bold"></span></button>
+                    <button onclick="workediaExecCommand('italic')" class="editor-tool-btn" title="مائل"><span class="dashicons dashicons-editor-italic"></span></button>
+                    <button onclick="workediaExecCommand('underline')" class="editor-tool-btn" title="تحته خط"><span class="dashicons dashicons-editor-underline"></span></button>
 
                     <div class="toolbar-divider"></div>
 
-                    <button onclick="smExecCommand('justifyRight')" class="editor-tool-btn"><span class="dashicons dashicons-editor-alignright"></span></button>
-                    <button onclick="smExecCommand('justifyCenter')" class="editor-tool-btn"><span class="dashicons dashicons-editor-aligncenter"></span></button>
-                    <button onclick="smExecCommand('justifyLeft')" class="editor-tool-btn"><span class="dashicons dashicons-editor-alignleft"></span></button>
+                    <button onclick="workediaExecCommand('justifyRight')" class="editor-tool-btn"><span class="dashicons dashicons-editor-alignright"></span></button>
+                    <button onclick="workediaExecCommand('justifyCenter')" class="editor-tool-btn"><span class="dashicons dashicons-editor-aligncenter"></span></button>
+                    <button onclick="workediaExecCommand('justifyLeft')" class="editor-tool-btn"><span class="dashicons dashicons-editor-alignleft"></span></button>
 
                     <div class="toolbar-divider"></div>
 
-                    <button onclick="smExecCommand('insertUnorderedList')" class="editor-tool-btn"><span class="dashicons dashicons-editor-ul"></span></button>
-                    <button onclick="smSetLineHeight('1.2')" class="editor-tool-btn" title="تباعد ضيق">S</button>
-                    <button onclick="smSetLineHeight('1.8')" class="editor-tool-btn" title="تباعد واسع">L</button>
+                    <button onclick="workediaExecCommand('insertUnorderedList')" class="editor-tool-btn"><span class="dashicons dashicons-editor-ul"></span></button>
+                    <button onclick="workediaSetLineHeight('1.2')" class="editor-tool-btn" title="تباعد ضيق">S</button>
+                    <button onclick="workediaSetLineHeight('1.8')" class="editor-tool-btn" title="تباعد واسع">L</button>
 
                     <div class="toolbar-divider"></div>
 
-                    <input type="color" onchange="smExecCommand('foreColor', this.value)" style="width:30px; height:30px; padding:0; border:none; background:none; cursor:pointer;" title="لون الخط">
+                    <input type="color" onchange="workediaExecCommand('foreColor', this.value)" style="width:30px; height:30px; padding:0; border:none; background:none; cursor:pointer;" title="لون الخط">
                 </div>
 
                 <!-- THE EDITOR CANVAS -->
@@ -108,8 +108,8 @@ $workedia = Workedia_Settings::get_workedia_info();
                 <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
                     <div style="color: #718096; font-size: 12px;">* سيتم دمج بيانات الهوية الرسمية آلياً عند التصدير.</div>
                     <div style="display: flex; gap: 15px;">
-                        <button onclick="smGenerateDocument('pdf')" class="workedia-btn pub-action-btn" style="width:auto; background: #111F35; padding: 0 35px; border-radius: 10px;"><span class="dashicons dashicons-pdf"></span> توليد وحفظ PDF</button>
-                        <button onclick="smGenerateDocument('image')" class="workedia-btn pub-action-btn" style="width:auto; background: #27ae60; padding: 0 35px; border-radius: 10px;"><span class="dashicons dashicons-format-image"></span> تصدير صورة (HQ)</button>
+                        <button onclick="workediaGenerateDocument('pdf')" class="workedia-btn pub-action-btn" style="width:auto; background: #111F35; padding: 0 35px; border-radius: 10px;"><span class="dashicons dashicons-pdf"></span> توليد وحفظ PDF</button>
+                        <button onclick="workediaGenerateDocument('image')" class="workedia-btn pub-action-btn" style="width:auto; background: #27ae60; padding: 0 35px; border-radius: 10px;"><span class="dashicons dashicons-format-image"></span> تصدير صورة (HQ)</button>
                     </div>
                 </div>
             </div>
@@ -142,11 +142,11 @@ $workedia = Workedia_Settings::get_workedia_info();
                     <h4 class="card-title"><span class="dashicons dashicons-tag"></span> وسوم تلقائية</h4>
                     <p style="font-size: 11px; color: #718096; margin-bottom: 12px;">انقر للإدراج في مكان المؤشر:</p>
                     <div class="placeholder-grid">
-                        <button onclick="smInsertPlaceholder('{MEMBER_NAME}')" class="placeholder-tag">اسم العضو</button>
-                        <button onclick="smInsertPlaceholder('{NATIONAL_ID}')" class="placeholder-tag">الرقم القومي</button>
-                        <button onclick="smInsertPlaceholder('{MEMBERSHIP_NO}')" class="placeholder-tag">رقم القيد</button>
-                        <button onclick="smInsertPlaceholder('{SERIAL_NO}')" class="placeholder-tag">رقم المرجع</button>
-                        <button onclick="smInsertPlaceholder('{DATE_NOW}')" class="placeholder-tag">تاريخ اليوم</button>
+                        <button onclick="workediaInsertPlaceholder('{MEMBER_NAME}')" class="placeholder-tag">اسم العضو</button>
+                        <button onclick="workediaInsertPlaceholder('{NATIONAL_ID}')" class="placeholder-tag">الرقم القومي</button>
+                        <button onclick="workediaInsertPlaceholder('{MEMBERSHIP_NO}')" class="placeholder-tag">رقم القيد</button>
+                        <button onclick="workediaInsertPlaceholder('{SERIAL_NO}')" class="placeholder-tag">رقم المرجع</button>
+                        <button onclick="workediaInsertPlaceholder('{DATE_NOW}')" class="placeholder-tag">تاريخ اليوم</button>
                     </div>
                 </div>
 
@@ -222,7 +222,7 @@ $workedia = Workedia_Settings::get_workedia_info();
                         <label class="workedia-label">شعار Workedia (الرئيسي):</label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <img id="preview_workedia_logo" src="<?php echo esc_url($workedia['workedia_logo']); ?>" style="width: 60px; height: 60px; object-fit: contain; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
-                            <button onclick="smUploadIdentityImg('workedia_logo')" class="workedia-btn workedia-btn-outline" style="font-size: 11px;">تغيير الشعار</button>
+                            <button onclick="workediaUploadIdentityImg('workedia_logo')" class="workedia-btn workedia-btn-outline" style="font-size: 11px;">تغيير الشعار</button>
                             <input type="hidden" id="sys_workedia_logo" value="<?php echo esc_attr($workedia['workedia_logo']); ?>">
                         </div>
                     </div>
@@ -230,7 +230,7 @@ $workedia = Workedia_Settings::get_workedia_info();
                         <label class="workedia-label">شعار الجهة (مثلاً: شعار الوزارة):</label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <img id="preview_authority_logo" src="<?php echo esc_url($workedia['authority_logo'] ?? ''); ?>" style="width: 60px; height: 60px; object-fit: contain; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
-                            <button onclick="smUploadIdentityImg('authority_logo')" class="workedia-btn workedia-btn-outline" style="font-size: 11px;">تغيير الشعار</button>
+                            <button onclick="workediaUploadIdentityImg('authority_logo')" class="workedia-btn workedia-btn-outline" style="font-size: 11px;">تغيير الشعار</button>
                             <input type="hidden" id="sys_authority_logo" value="<?php echo esc_attr($workedia['authority_logo'] ?? ''); ?>">
                         </div>
                     </div>
@@ -238,7 +238,7 @@ $workedia = Workedia_Settings::get_workedia_info();
             </div>
 
             <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 25px; text-align: left;">
-                <button onclick="smSaveIdentitySettings()" class="workedia-btn pub-action-btn" style="width: auto; padding: 0 40px; background: #27ae60; border-radius: 10px; font-weight: bold;">حفظ إعدادات الهوية</button>
+                <button onclick="workediaSaveIdentitySettings()" class="workedia-btn pub-action-btn" style="width: auto; padding: 0 40px; background: #27ae60; border-radius: 10px; font-weight: bold;">حفظ إعدادات الهوية</button>
             </div>
         </div>
     </div>
@@ -288,12 +288,12 @@ $workedia = Workedia_Settings::get_workedia_info();
 </style>
 
 <script>
-function smExecCommand(cmd, val = null) {
+function workediaExecCommand(cmd, val = null) {
     document.execCommand(cmd, false, val);
     document.getElementById('pub-document-editor').focus();
 }
 
-function smSetFontSize(size) {
+function workediaSetFontSize(size) {
     const sel = window.getSelection();
     if (sel.rangeCount) {
         const range = sel.getRangeAt(0);
@@ -303,26 +303,26 @@ function smSetFontSize(size) {
     }
 }
 
-function smSetLineHeight(height) {
+function workediaSetLineHeight(height) {
     const editor = document.getElementById('pub-document-editor');
     editor.style.lineHeight = height;
 }
 
-function smInsertPlaceholder(text) {
+function workediaInsertPlaceholder(text) {
     document.execCommand('insertText', false, text);
 }
 
-async function smGenerateDocument(format) {
+async function workediaGenerateDocument(format) {
     const title = document.getElementById('pub_doc_title').value;
     const content = document.getElementById('pub-document-editor').innerHTML;
     const docType = document.getElementById('pub_doc_type').value;
 
     if (!title) {
-        smShowNotification('يرجى إدخال عنوان للمستند', true);
+        workediaShowNotification('يرجى إدخال عنوان للمستند', true);
         return;
     }
 
-    smShowNotification('جاري توليد المستند...');
+    workediaShowNotification('جاري توليد المستند...');
 
     const fd = new FormData();
     fd.append('action', 'workedia_generate_pub_doc');
@@ -349,7 +349,7 @@ async function smGenerateDocument(format) {
         link.download = title + '.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-        smShowNotification('تم تحميل الصورة بنجاح');
+        workediaShowNotification('تم تحميل الصورة بنجاح');
     }
 
     fetch(ajaxurl, { method: 'POST', body: fd })
@@ -359,7 +359,7 @@ async function smGenerateDocument(format) {
             if (format === 'pdf') {
                 window.open(res.data.url, '_blank');
             }
-            smShowNotification('تم حفظ المستند في السجلات بنجاح');
+            workediaShowNotification('تم حفظ المستند في السجلات بنجاح');
             setTimeout(() => location.reload(), 1500);
         } else {
             alert('خطأ: ' + res.data);
@@ -367,11 +367,11 @@ async function smGenerateDocument(format) {
     });
 }
 
-function smDownloadGenerated(id, format) {
+function workediaDownloadGenerated(id, format) {
     window.open(ajaxurl + '?action=workedia_print_pub_doc&id=' + id + '&format=' + format, '_blank');
 }
 
-function smUploadIdentityImg(type) {
+function workediaUploadIdentityImg(type) {
     const frame = wp.media({
         title: 'اختر الشعار الرسمي',
         button: { text: 'استخدام كشعار' },
@@ -385,7 +385,7 @@ function smUploadIdentityImg(type) {
     frame.open();
 }
 
-function smSaveIdentitySettings() {
+function workediaSaveIdentitySettings() {
     const btn = event.currentTarget;
     const originalHtml = btn.innerHTML;
     btn.innerHTML = '<span class="dashicons dashicons-update spin"></span> جاري الحفظ...';
@@ -408,18 +408,18 @@ function smSaveIdentitySettings() {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم حفظ إعدادات الهوية بنجاح');
+            workediaShowNotification('تم حفظ إعدادات الهوية بنجاح');
             btn.innerHTML = '<span class="dashicons dashicons-yes"></span> تم الحفظ';
             setTimeout(() => location.reload(), 1000);
         } else {
-            smShowNotification(res.data, true);
+            workediaShowNotification(res.data, true);
             btn.innerHTML = originalHtml;
             btn.disabled = false;
         }
     });
 }
 
-function smFilterLogs() {
+function workediaFilterLogs() {
     const val = document.getElementById('pub_log_search').value.toLowerCase();
     const rows = document.querySelectorAll('#pub-logs-table tbody tr');
     rows.forEach(row => {
@@ -427,7 +427,7 @@ function smFilterLogs() {
     });
 }
 
-window.smOpenInternalTab = function(tabId, element) {
+window.workediaOpenInternalTab = function(tabId, element) {
     document.querySelectorAll('.workedia-internal-tab').forEach(t => t.style.display = 'none');
     const target = document.getElementById(tabId);
     if (target) target.style.display = 'block';

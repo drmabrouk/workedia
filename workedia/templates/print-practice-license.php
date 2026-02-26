@@ -1,7 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 $user = wp_get_current_user();
-if (!current_user_can('workedia_print_reports') && !in_array('workedia_member', (array)$user->roles)) wp_die('Unauthorized');
+if (!current_user_can('manage_options') && !in_array('subscriber', (array)$user->roles)) wp_die('Unauthorized');
 
 $member_id = intval($_GET['member_id']);
 $member = Workedia_DB::get_member_by_id($member_id);

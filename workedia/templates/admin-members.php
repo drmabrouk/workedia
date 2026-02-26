@@ -1,7 +1,7 @@
 <?php if (!defined('ABSPATH')) exit; ?>
 <?php
 global $wpdb;
-$can_manage_members = current_user_can('workedia_manage_members');
+$can_manage_members = current_user_can('manage_options');
 $import_results = get_transient('workedia_import_results_' . get_current_user_id());
 if ($import_results) {
     delete_transient('workedia_import_results_' . get_current_user_id());
@@ -141,8 +141,8 @@ if ($import_results) {
                                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                     <a href="<?php echo add_query_arg('workedia_tab', 'member-profile'); ?>&member_id=<?php echo $member->id; ?>" class="workedia-btn workedia-btn-outline" style="padding: 5px 12px; font-size: 12px; height: 32px; text-decoration:none; display:flex; align-items:center;">عرض</a>
                                     <?php if ($can_manage_members): ?>
-                                        <button onclick='editSmMember(<?php echo json_encode($member); ?>)' class="workedia-btn workedia-btn-outline" style="padding: 5px 12px; font-size: 12px; height: 32px; color: #2c3e50; border-color: #2c3e50;">تعديل</button>
-                                        <button onclick='smOpenMemberAccountModal(<?php echo json_encode(["id" => $member->id, "wp_user_id" => $member->wp_user_id, "name" => $member->name, "email" => $member->email]); ?>)' class="workedia-btn" style="padding: 5px 12px; font-size: 12px; height: 32px; background: #2c3e50;">الحساب</button>
+                                        <button onclick='workediaEditMember(<?php echo json_encode($member); ?>)' class="workedia-btn workedia-btn-outline" style="padding: 5px 12px; font-size: 12px; height: 32px; color: #2c3e50; border-color: #2c3e50;">تعديل</button>
+                                        <button onclick='workediaOpenMemberAccountModal(<?php echo json_encode(["id" => $member->id, "wp_user_id" => $member->wp_user_id, "name" => $member->name, "email" => $member->email]); ?>)' class="workedia-btn" style="padding: 5px 12px; font-size: 12px; height: 32px; background: #2c3e50;">الحساب</button>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -182,7 +182,7 @@ if ($import_results) {
                     <div class="workedia-form-group"><label class="workedia-label">المؤهل العلمي:</label><select name="academic_degree" class="workedia-select"><?php foreach (Workedia_Settings::get_academic_degrees() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">المحافظة:</label><select name="governorate" class="workedia-select"><option value="">-- اختر المحافظة --</option><?php foreach (Workedia_Settings::get_governorates() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">رقم العضوية:</label><input name="membership_number" type="text" class="workedia-input"></div>
-                    <div class="workedia-form-group"><label class="workedia-label">تاريخ بدء العضوية:</label><input name="membership_start_date" id="add_mem_start" type="date" class="workedia-input" onchange="smCalculateDateExpiry('add_mem_start', 'add_mem_expiry')"></div>
+                    <div class="workedia-form-group"><label class="workedia-label">تاريخ بدء العضوية:</label><input name="membership_start_date" id="add_mem_start" type="date" class="workedia-input" onchange="workediaCalculateDateExpiry('add_mem_start', 'add_mem_expiry')"></div>
                     <div class="workedia-form-group"><label class="workedia-label">تاريخ انتهاء العضوية:</label><input name="membership_expiration_date" id="add_mem_expiry" type="date" class="workedia-input"></div>
                 </div>
                 <button type="submit" class="workedia-btn">إضافة العضو</button>
@@ -202,7 +202,7 @@ if ($import_results) {
                     <div class="workedia-form-group"><label class="workedia-label">التخصص:</label><select name="specialization" id="edit_spec" class="workedia-select"><?php foreach (Workedia_Settings::get_specializations() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">المؤهل العلمي:</label><select name="academic_degree" id="edit_degree" class="workedia-select"><?php foreach (Workedia_Settings::get_academic_degrees() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
                     <div class="workedia-form-group"><label class="workedia-label">المحافظة:</label><select name="governorate" id="edit_gov" class="workedia-select"><?php foreach (Workedia_Settings::get_governorates() as $k => $v) echo "<option value='$k'>$v</option>"; ?></select></div>
-                    <div class="workedia-form-group"><label class="workedia-label">تاريخ بدء العضوية:</label><input name="membership_start_date" id="edit_mem_start_input" type="date" class="workedia-input" onchange="smCalculateDateExpiry('edit_mem_start_input', 'edit_mem_expiry_input')"></div>
+                    <div class="workedia-form-group"><label class="workedia-label">تاريخ بدء العضوية:</label><input name="membership_start_date" id="edit_mem_start_input" type="date" class="workedia-input" onchange="workediaCalculateDateExpiry('edit_mem_start_input', 'edit_mem_expiry_input')"></div>
                     <div class="workedia-form-group"><label class="workedia-label">تاريخ انتهاء العضوية:</label><input name="membership_expiration_date" id="edit_mem_expiry_input" type="date" class="workedia-input"></div>
                 </div>
                 <button type="submit" class="workedia-btn">تحديث البيانات</button>
@@ -228,13 +228,13 @@ if ($import_results) {
                         <label class="workedia-label">كلمة مرور جديدة (اتركها فارغة إذا لم ترد التغيير):</label>
                         <input name="password" type="password" class="workedia-input">
                     </div>
-                    <?php if (current_user_can('workedia_full_access') || current_user_can('manage_options')): ?>
+                    <?php if (current_user_can('manage_options')): ?>
                     <div class="workedia-form-group">
                         <label class="workedia-label">الدور / الصلاحيات:</label>
                         <select name="role" id="acc_role" class="workedia-select">
-                            <option value="workedia_member">عضو Workedia (افتراضي)</option>
-                            <option value="workedia_admin">مسؤول Workedia</option>
-                            <option value="workedia_system_admin">مدير نظام</option>
+                            <option value="subscriber">عضو Workedia (افتراضي)</option>
+                            <option value="administrator">مسؤول Workedia</option>
+                            <option value="administrator">مدير نظام</option>
                         </select>
                     </div>
                     <?php endif; ?>
@@ -250,7 +250,7 @@ if ($import_results) {
 
     <script>
     (function() {
-        window.smCalculateDateExpiry = function(startId, endId) {
+        window.workediaCalculateDateExpiry = function(startId, endId) {
             const startEl = document.getElementById(startId);
             const endEl = document.getElementById(endId);
             if (startEl && endEl && startEl.value) {
@@ -260,7 +260,7 @@ if ($import_results) {
             }
         };
 
-        window.editSmMember = function(s) {
+        window.workediaEditMember = function(s) {
             document.getElementById('edit_member_id_hidden').value = s.id;
             document.getElementById('edit_name').value = s.name;
             document.getElementById('edit_grade').value = s.professional_grade;
@@ -276,7 +276,7 @@ if ($import_results) {
             document.querySelectorAll('.member-checkbox').forEach(cb => cb.checked = master.checked);
         };
 
-        window.smOpenMemberAccountModal = function(data) {
+        window.workediaOpenMemberAccountModal = function(data) {
             document.getElementById('acc_member_id').value = data.id;
             document.getElementById('acc_wp_user_id').value = data.wp_user_id;
             document.getElementById('acc_member_name').innerText = data.name;

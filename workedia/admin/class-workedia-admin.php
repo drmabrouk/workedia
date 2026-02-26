@@ -34,7 +34,7 @@ class Workedia_Admin {
             'workedia-dashboard',
             'إدارة الأعضاء',
             'إدارة الأعضاء',
-            'workedia_manage_members',
+            'manage_options',
             'workedia-members',
             array($this, 'display_members')
         );
@@ -43,7 +43,7 @@ class Workedia_Admin {
             'workedia-dashboard',
             'أعضاء Workedia',
             'أعضاء Workedia',
-            'workedia_full_access',
+            'manage_options',
             'workedia-staff',
             array($this, 'display_staff_page')
         );
@@ -52,7 +52,7 @@ class Workedia_Admin {
             'workedia-dashboard',
             'إعدادات النظام',
             'إعدادات النظام',
-            'workedia_manage_system',
+            'manage_options',
             'workedia-settings',
             array($this, 'display_settings')
         );
@@ -61,7 +61,7 @@ class Workedia_Admin {
             'workedia-dashboard',
             'الإعدادات المتقدمة',
             'الإعدادات المتقدمة',
-            'workedia_full_access',
+            'manage_options',
             'workedia-advanced',
             array($this, 'display_advanced_settings')
         );

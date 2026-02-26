@@ -26,8 +26,8 @@ class Workedia_Logger {
     public static function get_logs($limit = 100, $offset = 0, $search = '') {
         global $wpdb;
         $user = wp_get_current_user();
-        $is_officer = in_array('workedia_admin', (array)$user->roles) || in_array('workedia_member', (array)$user->roles);
-        $has_full_access = current_user_can('workedia_full_access') || current_user_can('manage_options');
+        $is_officer = in_array('administrator', (array)$user->roles);
+        $has_full_access = current_user_can('manage_options');
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $where = "1=1";
@@ -53,8 +53,8 @@ class Workedia_Logger {
     public static function get_total_logs($search = '') {
         global $wpdb;
         $user = wp_get_current_user();
-        $is_officer = in_array('workedia_admin', (array)$user->roles) || in_array('workedia_member', (array)$user->roles);
-        $has_full_access = current_user_can('workedia_full_access') || current_user_can('manage_options');
+        $is_officer = in_array('administrator', (array)$user->roles);
+        $has_full_access = current_user_can('manage_options');
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $where = "1=1";

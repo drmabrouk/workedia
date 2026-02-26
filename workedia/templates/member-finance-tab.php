@@ -50,7 +50,7 @@ $history = Workedia_Finance::get_payment_history($member->id);
                             <th>قيمة الخدمة</th>
                             <th>الغرامة (Fine)</th>
                             <th>المستحق</th>
-                            <?php if (current_user_can('workedia_manage_finance')): ?>
+                            <?php if (current_user_can('manage_options')): ?>
                             <th>إجراء</th>
                             <?php endif; ?>
                         </tr>
@@ -72,10 +72,10 @@ $history = Workedia_Finance::get_payment_history($member->id);
                                 <td><?php echo number_format($item['amount'], 2); ?></td>
                                 <td style="color:#e53e3e;"><?php echo number_format($item['penalty'], 2); ?></td>
                                 <td style="font-weight:900; color:#e53e3e;"><?php echo number_format($item['total'], 2); ?></td>
-                                <?php if (current_user_can('workedia_manage_finance')): ?>
+                                <?php if (current_user_can('manage_options')): ?>
                                 <td style="text-align: center;">
                                     <button type="button" class="workedia-btn" style="height: 25px; padding: 0 10px; font-size: 10px; width: auto; background: #2c3e50;"
-                                        onclick="smSelectForPayment(<?php echo $item['total']; ?>, '<?php echo esc_js($item['item']); ?>')">سداد</button>
+                                        onclick="workediaSelectForPayment(<?php echo $item['total']; ?>, '<?php echo esc_js($item['item']); ?>')">سداد</button>
                                 </td>
                                 <?php endif; ?>
                             </tr>
@@ -85,7 +85,7 @@ $history = Workedia_Finance::get_payment_history($member->id);
                 </table>
             </div>
 
-            <?php if (current_user_can('workedia_manage_finance')): ?>
+            <?php if (current_user_can('manage_options')): ?>
             <div id="workedia-payment-section" style="margin-top: 25px; background: #fffaf0; border: 1px solid #feebc8; padding: 20px; border-radius: 12px;">
                 <h5 style="margin: 0 0 15px 0; color: #744210; font-weight: 800;"><span class="dashicons dashicons-plus-alt" style="color:#27ae60;"></span> تسجيل تحصيل مبلغ</h5>
                 <form id="record-payment-form">
@@ -118,7 +118,7 @@ $history = Workedia_Finance::get_payment_history($member->id);
                             <input type="text" name="details_ar" class="workedia-input" placeholder="مثال: سداد اشتراك عضوية 2024">
                         </div>
                     </div>
-                    <button type="button" onclick="smSubmitPayment(this)" class="workedia-btn" style="background:#27ae60; height: 45px; font-weight: 700; width: 100%;">تأكيد الاستلام وحفظ العملية</button>
+                    <button type="button" onclick="workediaSubmitPayment(this)" class="workedia-btn" style="background:#27ae60; height: 45px; font-weight: 700; width: 100%;">تأكيد الاستلام وحفظ العملية</button>
                 </form>
             </div>
             <?php endif; ?>
@@ -162,7 +162,7 @@ $history = Workedia_Finance::get_payment_history($member->id);
 </div>
 
 <script>
-function smSelectForPayment(amount, reason) {
+function workediaSelectForPayment(amount, reason) {
     const form = document.getElementById('record-payment-form');
     if (!form) return;
     form.querySelector('[name="amount"]').value = amount;

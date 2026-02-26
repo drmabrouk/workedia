@@ -228,7 +228,7 @@ class Workedia_Finance {
     public static function get_financial_stats() {
         global $wpdb;
         $user = wp_get_current_user();
-        $is_workedia_admin = in_array('workedia_admin', (array)$user->roles);
+        $is_administrator = in_array('administrator', (array)$user->roles);
         $my_gov = get_user_meta($user->ID, 'workedia_governorate', true);
 
         $args = array('limit' => -1);

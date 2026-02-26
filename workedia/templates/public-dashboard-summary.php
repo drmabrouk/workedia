@@ -1,7 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 global $wpdb;
-$is_officer = current_user_can('workedia_manage_members') || current_user_can('manage_options');
+$is_officer = current_user_can('manage_options');
 
 // Check for active surveys for current user role
 $user_role = !empty(wp_get_current_user()->roles) ? wp_get_current_user()->roles[0] : '';
@@ -17,7 +17,7 @@ foreach ($active_surveys as $survey):
     <h3 style="margin: 0 0 10px 0; color: #92400e;"><?php echo esc_html($survey->title); ?></h3>
     <p style="margin: 0 0 20px 0; font-size: 14px; color: #b45309;">يرجى المشاركة في هذا الاستطلاع القصير للمساهمة في تحسين جودة العملية المهنية.</p>
 
-    <button class="workedia-btn" style="background: #d97706; width: auto;" onclick="smOpenSurveyModal(<?php echo $survey->id; ?>)">المشاركة الآن</button>
+    <button class="workedia-btn" style="background: #d97706; width: auto;" onclick="workediaOpenSurveyModal(<?php echo $survey->id; ?>)">المشاركة الآن</button>
 </div>
 
 <!-- Survey Participation Modal -->
@@ -55,23 +55,23 @@ foreach ($active_surveys as $survey):
                 </div>
                 <?php endforeach; ?>
             </div>
-            <button class="workedia-btn" style="height: 45px; margin-top: 20px;" onclick="smSubmitSurveyResponse(<?php echo $survey->id; ?>, <?php echo count($questions); ?>)">إرسال الردود</button>
+            <button class="workedia-btn" style="height: 45px; margin-top: 20px;" onclick="workediaSubmitSurveyResponse(<?php echo $survey->id; ?>, <?php echo count($questions); ?>)">إرسال الردود</button>
         </div>
     </div>
 </div>
 <?php endforeach; ?>
 
 <script>
-function smOpenSurveyModal(id) {
+function workediaOpenSurveyModal(id) {
     document.getElementById('survey-participation-modal-' + id).style.display = 'flex';
 }
 
-function smSubmitSurveyResponse(surveyId, questionsCount) {
+function workediaSubmitSurveyResponse(surveyId, questionsCount) {
     const responses = [];
     for (let i = 0; i < questionsCount; i++) {
         const selected = document.querySelector(`input[name="survey_q_${surveyId}_${i}"]:checked`);
         if (!selected) {
-            smShowNotification('يرجى الإجابة على جميع الأسئلة', true);
+            workediaShowNotification('يرجى الإجابة على جميع الأسئلة', true);
             return;
         }
         responses.push(selected.value);
@@ -87,10 +87,10 @@ function smSubmitSurveyResponse(surveyId, questionsCount) {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            smShowNotification('تم إرسال ردودك بنجاح. شكراً لمشاركتك!');
+            workediaShowNotification('تم إرسال ردودك بنجاح. شكراً لمشاركتك!');
             location.reload();
         } else {
-            smShowNotification('فشل إرسال الردود: ' + res.data, true);
+            workediaShowNotification('فشل إرسال الردود: ' + res.data, true);
         }
     });
 }
@@ -175,7 +175,7 @@ $govs = Workedia_Settings::get_governorates();
 
 
 <script>
-function smDownloadChart(chartId, fileName) {
+function workediaDownloadChart(chartId, fileName) {
     const canvas = document.getElementById(chartId);
     if (!canvas) return;
     const link = document.createElement('a');
@@ -188,7 +188,7 @@ function smDownloadChart(chartId, fileName) {
     <?php if (!$is_officer): ?>
     return;
     <?php endif; ?>
-    window.smCharts = window.smCharts || {};
+    window.workediaCharts = window.workediaCharts || {};
 
     const initSummaryCharts = function() {
         if (typeof Chart === 'undefined') {
@@ -245,12 +245,12 @@ function smDownloadChart(chartId, fileName) {
         });
 
         const createOrUpdateChart = (id, config) => {
-            if (window.smCharts[id]) {
-                window.smCharts[id].destroy();
+            if (window.workediaCharts[id]) {
+                window.workediaCharts[id].destroy();
             }
             const el = document.getElementById(id);
             if (el) {
-                window.smCharts[id] = new Chart(el.getContext('2d'), config);
+                window.workediaCharts[id] = new Chart(el.getContext('2d'), config);
             }
         };
 
