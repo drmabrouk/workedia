@@ -3,7 +3,7 @@
  * Plugin Name: Workedia
  * Description: نظام شامل لإدارة الأعضاء، الخدمات الرقمية، واستطلاعات الرأي الخاصة بـ Workedia.
  * Version: 97.3.0
- * Author: AHMED MABROUK
+ * Author: Workedia
  * Language: ar
  * Text Domain: workedia
  * Domain Path: /languages
