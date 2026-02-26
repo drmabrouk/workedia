@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Workedia
- * Description: نظام شامل لإدارة الأعضاء، التراخيص، والتقارير الخاصة بـ Workedia والمالية.
+ * Description: نظام شامل لإدارة الأعضاء، الخدمات الرقمية، واستطلاعات الرأي الخاصة بـ Workedia.
  * Version: 97.3.0
  * Author: AHMED MABROUK
  * Language: ar

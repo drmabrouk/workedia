@@ -101,8 +101,6 @@
                 html += `
                     <div class="workedia-verify-item"><label>الاسم الكامل</label><span>${doc.name}</span></div>
                     <div class="workedia-verify-item"><label>رقم القيد</label><span>${doc.number}</span></div>
-                    <div class="workedia-verify-item"><label>التخصص</label><span>${doc.specialization}</span></div>
-                    <div class="workedia-verify-item"><label>الدرجة الوظيفية</label><span>${doc.grade}</span></div>
                     <div class="workedia-verify-item"><label>تاريخ الانتهاء</label><span class="${statusClass}">${doc.expiry || 'غير محدد'}</span></div>
                 `;
             } else if (k === 'license') {

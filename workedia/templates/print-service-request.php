@@ -3,7 +3,7 @@
 $request_id = intval($_GET['id']);
 global $wpdb;
 $req = $wpdb->get_row($wpdb->prepare("
-    SELECT r.*, s.name as service_name, s.description as service_desc, s.selected_profile_fields, m.name as member_name, m.national_id, m.membership_number, m.governorate, m.professional_grade, m.specialization, m.phone, m.email, m.facility_name
+    SELECT r.*, s.name as service_name, s.description as service_desc, s.selected_profile_fields, m.name as member_name, m.national_id, m.membership_number, m.governorate, m.phone, m.email, m.facility_name
     FROM {$wpdb->prefix}workedia_service_requests r
     JOIN {$wpdb->prefix}workedia_services s ON r.service_id = s.id
     JOIN {$wpdb->prefix}workedia_members m ON r.member_id = m.id
@@ -65,8 +65,6 @@ $data = json_decode($req->request_data, true);
             'name' => ['label' => 'الاسم الكامل', 'value' => $req->member_name],
             'national_id' => ['label' => 'الرقم القومي', 'value' => $req->national_id],
             'membership_number' => ['label' => 'رقم العضوية', 'value' => $req->membership_number],
-            'professional_grade' => ['label' => 'الدرجة الوظيفية', 'value' => Workedia_Settings::get_professional_grades()[$req->professional_grade] ?? $req->professional_grade],
-            'specialization' => ['label' => 'التخصص', 'value' => Workedia_Settings::get_specializations()[$req->specialization] ?? $req->specialization],
             'phone' => ['label' => 'رقم الهاتف', 'value' => $req->phone],
             'email' => ['label' => 'البريد الإلكتروني', 'value' => $req->email],
             'governorate' => ['label' => 'المحافظة', 'value' => Workedia_Settings::get_governorates()[$req->governorate] ?? $req->governorate],

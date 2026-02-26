@@ -4,11 +4,7 @@ $workedia = Workedia_Settings::get_workedia_info();
 if (!empty($_GET['member_id'])) {
     $members_to_print = array(Workedia_DB::get_member_by_id(intval($_GET['member_id'])));
 } else {
-    $filters = array();
-    if (!empty($_GET['grade_filter'])) {
-        $filters['professional_grade'] = sanitize_text_field($_GET['grade_filter']);
-    }
-    $members_to_print = Workedia_DB::get_members($filters);
+    $members_to_print = Workedia_DB::get_members();
 }
 
 if (empty($members_to_print) || !$members_to_print[0]) wp_die('Member(s) not found');
@@ -55,7 +51,6 @@ if (empty($members_to_print) || !$members_to_print[0]) wp_die('Member(s) not fou
             </div>
             <div class="card-body">
                 <div class="member-name"><?php echo esc_html($member->name); ?></div>
-                <div class="member-class"><?php echo esc_html(Workedia_Settings::get_professional_grades()[$member->professional_grade] ?? $member->professional_grade); ?></div>
 
                 <div class="cred-box">
                     <div class="cred-label">اسم المستخدم (القومي):</div>

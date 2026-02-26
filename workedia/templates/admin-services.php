@@ -56,7 +56,6 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
                         <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 20px; flex: 1;"><?php echo esc_html($s->description); ?></p>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                            <div style="font-weight: 700; color: var(--workedia-primary-color);"><?php echo $s->fees > 0 ? number_format($s->fees, 2) . ' ج.م' : 'خدمة مجانية'; ?></div>
                             <?php if ($is_official): ?>
                                 <div style="display: flex; gap: 5px;">
                                     <button class="workedia-btn workedia-btn-outline" style="padding: 5px 10px; font-size: 11px;" onclick='editService(<?php echo json_encode($s); ?>)'>تعديل</button>
@@ -186,7 +185,6 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         <form id="add-service-form" style="padding: 20px;">
             <div class="workedia-form-group"><label class="workedia-label">اسم الخدمة:</label><input name="name" type="text" class="workedia-input" required></div>
             <div class="workedia-form-group"><label class="workedia-label">وصف الخدمة:</label><textarea name="description" class="workedia-textarea" rows="3"></textarea></div>
-            <div class="workedia-form-group"><label class="workedia-label">الرسوم (0 للمجانية):</label><input name="fees" type="number" step="0.01" class="workedia-input" value="0"></div>
 
             <div class="workedia-form-group">
                 <label class="workedia-label">حالة الخدمة:</label>
@@ -212,8 +210,6 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
                         'name' => 'الاسم الكامل',
                         'national_id' => 'الرقم القومي',
                         'membership_number' => 'رقم العضوية',
-                        'professional_grade' => 'الدرجة الوظيفية',
-                        'specialization' => 'التخصص',
                         'phone' => 'رقم الهاتف',
                         'email' => 'البريد الإلكتروني',
                         'governorate' => 'المحافظة',
@@ -239,10 +235,6 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
             <input type="hidden" name="service_id" id="req-service-id">
             <input type="hidden" name="member_id" value="<?php echo $member_id; ?>">
             <div id="dynamic-fields-container"></div>
-            <div style="background: #fffaf0; padding: 15px; border-radius: 8px; border: 1px solid #feebc8; margin-top: 15px; font-size: 13px;">
-                <strong>الرسوم المستحقة: </strong> <span id="req-service-fees"></span>
-                <p style="margin: 5px 0 0 0; color: #744210;">* سيتم إضافة الرسوم إلى حسابك المالي عند اعتماد الطلب.</p>
-            </div>
             <button type="submit" class="workedia-btn" style="margin-top: 20px;">تأكيد وتقديم الطلب</button>
         </form>
     </div>
@@ -359,7 +351,6 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
         modal.find('h3').text('تعديل الخدمة: ' + s.name);
         modal.find('[name="name"]').val(s.name);
         modal.find('[name="description"]').val(s.description);
-        modal.find('[name="fees"]').val(s.fees);
         modal.find('[name="status"]').val(s.status);
 
         $('#fields-list').empty();
@@ -419,7 +410,6 @@ $all_requests = $is_official ? Workedia_DB::get_service_requests() : [];
     window.requestService = function(s) {
         $('#req-service-name').text(s.name);
         $('#req-service-id').val(s.id);
-        $('#req-service-fees').text(s.fees > 0 ? s.fees + ' ج.م' : 'مجاناً');
 
         const container = $('#dynamic-fields-container').empty();
 

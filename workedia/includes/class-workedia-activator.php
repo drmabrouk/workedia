@@ -23,13 +23,6 @@ class Workedia_Activator {
             member_code tinytext,
             name tinytext NOT NULL,
             gender enum('male', 'female') DEFAULT 'male',
-            professional_grade tinytext,
-            specialization tinytext,
-            academic_degree tinytext,
-            university tinytext,
-            faculty tinytext,
-            department tinytext,
-            graduation_date date,
             residence_street text,
             residence_city tinytext,
             residence_governorate tinytext,
@@ -38,18 +31,6 @@ class Workedia_Activator {
             membership_start_date date,
             membership_expiration_date date,
             membership_status tinytext,
-            license_number tinytext,
-            license_issue_date date,
-            license_expiration_date date,
-            facility_number tinytext,
-            facility_name tinytext,
-            facility_license_issue_date date,
-            facility_license_expiration_date date,
-            facility_address text,
-            sub_workedia tinytext,
-            facility_category enum('A', 'B', 'C') DEFAULT 'C',
-            last_paid_membership_year int DEFAULT 0,
-            last_paid_license_year int DEFAULT 0,
             email tinytext,
             phone tinytext,
             alt_phone tinytext,
@@ -124,26 +105,6 @@ class Workedia_Activator {
             KEY user_id (user_id)
         ) $charset_collate;\n";
 
-        // Payments Table
-        $table_name = $wpdb->prefix . 'workedia_payments';
-        $sql .= "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            member_id mediumint(9) NOT NULL,
-            amount decimal(10,2) NOT NULL,
-            payment_type enum('membership', 'license', 'facility', 'other', 'penalty') NOT NULL,
-            payment_date date NOT NULL,
-            target_year int,
-            digital_invoice_code varchar(50),
-            paper_invoice_code varchar(50),
-            details_ar text,
-            notes text,
-            created_by bigint(20),
-            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            PRIMARY KEY  (id),
-            KEY member_id (member_id),
-            KEY created_by (created_by)
-        ) $charset_collate;\n";
-
         // Update Requests Table
         $table_name = $wpdb->prefix . 'workedia_update_requests';
         $sql .= "CREATE TABLE $table_name (
@@ -165,7 +126,6 @@ class Workedia_Activator {
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             name tinytext NOT NULL,
             description text,
-            fees decimal(10,2) DEFAULT 0,
             required_fields text,
             selected_profile_fields text,
             status enum('active', 'suspended') DEFAULT 'active',
@@ -180,7 +140,6 @@ class Workedia_Activator {
             service_id mediumint(9) NOT NULL,
             member_id mediumint(9) NOT NULL,
             request_data text NOT NULL,
-            fees_paid decimal(10,2) DEFAULT 0,
             status enum('pending', 'processing', 'approved', 'rejected') DEFAULT 'pending',
             processed_by bigint(20),
             created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -188,45 +147,6 @@ class Workedia_Activator {
             PRIMARY KEY  (id),
             KEY service_id (service_id),
             KEY member_id (member_id),
-            KEY status (status)
-        ) $charset_collate;\n";
-
-        // Membership Requests Table
-        $table_name = $wpdb->prefix . 'workedia_membership_requests';
-        $sql .= "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            national_id varchar(14) NOT NULL,
-            name tinytext NOT NULL,
-            gender enum('male', 'female') DEFAULT 'male',
-            professional_grade tinytext,
-            specialization tinytext,
-            academic_degree tinytext,
-            university tinytext,
-            faculty tinytext,
-            department tinytext,
-            graduation_date date,
-            residence_street text,
-            residence_city tinytext,
-            residence_governorate tinytext,
-            governorate tinytext,
-            phone tinytext,
-            email tinytext,
-            notes text,
-            payment_method varchar(50),
-            payment_reference varchar(100),
-            payment_screenshot_url text,
-            doc_qualification_url text,
-            doc_id_url text,
-            doc_military_url text,
-            doc_criminal_url text,
-            doc_photo_url text,
-            current_stage int DEFAULT 1,
-            status varchar(50) DEFAULT 'pending',
-            rejection_reason text,
-            processed_by bigint(20),
-            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            PRIMARY KEY  (id),
-            UNIQUE KEY national_id (national_id),
             KEY status (status)
         ) $charset_collate;\n";
 
@@ -257,63 +177,6 @@ class Workedia_Activator {
             PRIMARY KEY  (id),
             KEY member_id (member_id),
             KEY sent_at (sent_at)
-        ) $charset_collate;\n";
-
-        // Documents Table
-        $table_name = $wpdb->prefix . 'workedia_documents';
-        $sql .= "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            member_id mediumint(9) NOT NULL,
-            category enum('licenses', 'certificates', 'receipts', 'other') NOT NULL,
-            title varchar(255) NOT NULL,
-            file_url text NOT NULL,
-            file_type varchar(50),
-            created_by bigint(20),
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY  (id),
-            KEY member_id (member_id),
-            KEY category (category)
-        ) $charset_collate;\n";
-
-        // Document Logs Table
-        $table_name = $wpdb->prefix . 'workedia_document_logs';
-        $sql .= "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            document_id mediumint(9) NOT NULL,
-            action varchar(50) NOT NULL,
-            user_id bigint(20),
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY  (id),
-            KEY document_id (document_id)
-        ) $charset_collate;\n";
-
-        // Publishing Center Templates
-        $table_name = $wpdb->prefix . 'workedia_pub_templates';
-        $sql .= "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            title varchar(255) NOT NULL,
-            content longtext NOT NULL,
-            doc_type varchar(50) DEFAULT 'other',
-            settings text,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY  (id)
-        ) $charset_collate;\n";
-
-        // Publishing Center Generated Documents
-        $table_name = $wpdb->prefix . 'workedia_pub_documents';
-        $sql .= "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            template_id mediumint(9),
-            serial_number varchar(50) NOT NULL,
-            title varchar(255) NOT NULL,
-            content longtext NOT NULL,
-            created_by bigint(20),
-            download_count int DEFAULT 0,
-            last_format varchar(20),
-            options text,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY  (id),
-            UNIQUE KEY serial_number (serial_number)
         ) $charset_collate;\n";
 
         // Tickets Table
@@ -411,41 +274,6 @@ class Workedia_Activator {
 
         self::setup_roles();
         self::seed_notification_templates();
-        self::seed_publishing_templates();
-    }
-
-    private static function seed_publishing_templates() {
-        global $wpdb;
-        $table = $wpdb->prefix . 'workedia_pub_templates';
-
-        $templates = [
-            'experience_cert' => [
-                'title' => 'شهادة خبرة معتمدة',
-                'doc_type' => 'certificate',
-                'content' => '<div style="text-align:center;"><p>تشهد Workedia العامة بأن السيد العضو / <strong>{MEMBER_NAME}</strong></p><p>المقيد برقم قيد: {MEMBERSHIP_NO} ومحافظة: {GOVERNORATE}</p><p>قد اجتاز كافة المتطلبات المهنية المقررة ويعتبر ممارساً معتمداً في تخصصه.</p></div>'
-            ],
-            'official_report' => [
-                'title' => 'تقرير فني رسمي',
-                'doc_type' => 'report',
-                'content' => '<h3>موضوع التقرير: ....................</h3><p>بناءً على المعاينة الفنية والمهنية لعضو Workedia {MEMBER_NAME}، نفيد بالآتي:</p><ul><li>أولاً: .............</li><li>ثانياً: .............</li></ul>'
-            ],
-            'internal_memo' => [
-                'title' => 'مذكرة عرض داخلية',
-                'doc_type' => 'memo',
-                'content' => '<h3>مذكرة عرض إلى: السيد مدير عام Workedia</h3><p>بشأن: .........................</p><p>بالإشارة إلى الطلب المقدم من {MEMBER_NAME}، نحيط سيادتكم علماً بـ .............</p><p style="text-align:left;">وتفضلوا بقبول فائق الاحترام،،</p>'
-            ]
-        ];
-
-        foreach ($templates as $key => $data) {
-            $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE title = %s", $data['title']));
-            if (!$exists) {
-                $wpdb->insert($table, [
-                    'title' => $data['title'],
-                    'doc_type' => $data['doc_type'],
-                    'content' => $data['content']
-                ]);
-            }
-        }
     }
 
     private static function seed_notification_templates() {
@@ -456,21 +284,6 @@ class Workedia_Activator {
                 'subject' => 'تذكير: تجديد عضوية Workedia',
                 'body' => "عزيزي العضو {member_name}،\n\nنود تذكيركم بقرب موعد تجديد عضويتكم السنوية لعام {year}.\nيرجى السداد لتجنب الغرامات.\n\nشكراً لكم.",
                 'days_before' => 30
-            ],
-            'license_practice' => [
-                'subject' => 'تنبيه: انتهاء تصريح مزاولة المهنة',
-                'body' => "عزيزي العضو {member_name}،\n\nنحيطكم علماً بأن تصريح مزاولة المهنة الخاص بكم سينتهي في {expiry_date}.\nيرجى البدء في إجراءات التجديد.\n\nتحياتنا.",
-                'days_before' => 30
-            ],
-            'license_facility' => [
-                'subject' => 'تنبيه: انتهاء ترخيص المنشأة',
-                'body' => "عزيزي العضو {member_name}،\n\nنحيطكم علماً بأن ترخيص المنشأة {facility_name} سينتهي في {expiry_date}.\nيرجى مراجعة Workedia للتجديد.\n\nشكراً لكم.",
-                'days_before' => 30
-            ],
-            'payment_reminder' => [
-                'subject' => 'إشعار: مستحقات مالية متأخرة',
-                'body' => "عزيزي العضو {member_name}،\n\nيوجد مبالغ مستحقة على حسابكم بقيمة {balance} ج.م.\nنرجو السداد في أقرب وقت ممكن.\n\nWorkedia.",
-                'days_before' => 0
             ],
             'welcome_activation' => [
                 'subject' => 'مرحباً بك في المنصة الرقمية لنقابتك',
@@ -520,9 +333,6 @@ class Workedia_Activator {
             'sm_appearance'            => 'workedia_appearance',
             'sm_labels'                => 'workedia_labels',
             'sm_notification_settings' => 'workedia_notification_settings',
-            'sm_professional_grades'   => 'workedia_professional_grades',
-            'sm_specializations'       => 'workedia_specializations',
-            'sm_finance_settings'      => 'workedia_finance_settings',
             'sm_last_backup_download'  => 'workedia_last_backup_download',
             'sm_last_backup_import'    => 'workedia_last_backup_import',
             'sm_plugin_version'        => 'workedia_plugin_version'
@@ -549,7 +359,6 @@ class Workedia_Activator {
             'sm_update_requests'        => 'workedia_update_requests',
             'sm_services'               => 'workedia_services',
             'sm_service_requests'       => 'workedia_service_requests',
-            'sm_membership_requests'    => 'workedia_membership_requests',
             'sm_notification_templates' => 'workedia_notification_templates',
             'sm_notification_logs'      => 'workedia_notification_logs',
             'sm_documents'              => 'workedia_documents',
@@ -616,9 +425,30 @@ class Workedia_Activator {
             }
         }
 
+        self::migrate_user_meta();
         self::migrate_user_roles();
         self::sync_missing_member_accounts();
         self::create_pages();
+    }
+
+    private static function migrate_user_meta() {
+        global $wpdb;
+        $meta_mappings = [
+            'sm_governorate' => 'workedia_governorate',
+            'sm_phone' => 'workedia_phone',
+            'sm_account_status' => 'workedia_account_status',
+            'sm_temp_pass' => 'workedia_temp_pass',
+            'sm_recovery_otp' => 'workedia_recovery_otp',
+            'sm_recovery_otp_time' => 'workedia_recovery_otp_time',
+            'sm_recovery_otp_used' => 'workedia_recovery_otp_used'
+        ];
+
+        foreach ($meta_mappings as $old => $new) {
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$wpdb->prefix}usermeta SET meta_key = %s WHERE meta_key = %s",
+                $new, $old
+            ));
+        }
     }
 
     private static function create_pages() {

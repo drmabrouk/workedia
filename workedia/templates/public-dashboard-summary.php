@@ -106,68 +106,8 @@ function workediaSubmitSurveyResponse(surveyId, questionsCount) {
         <div style="font-size: 0.85em; color: var(--workedia-text-gray); margin-bottom: 10px; font-weight: 700;">إجمالي الطاقم الإداري</div>
         <div style="font-size: 2.5em; font-weight: 900; color: var(--workedia-secondary-color);"><?php echo esc_html($stats['total_officers'] ?? 0); ?></div>
     </div>
-    <div class="workedia-stat-card">
-        <div style="font-size: 0.85em; color: var(--workedia-text-gray); margin-bottom: 10px; font-weight: 700;">إجمالي إيرادات Workedia</div>
-        <div style="font-size: 2.5em; font-weight: 900; color: #38a169;"><?php echo number_format($stats['total_revenue'] ?? 0, 2); ?> <span style="font-size: 0.4em;">ج.م</span></div>
-    </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px;">
-    <!-- Financial Collection Trends -->
-    <div style="background: #fff; padding: 25px; border: 1px solid var(--workedia-border-color); border-radius: 12px; box-shadow: var(--workedia-shadow);">
-        <h3 style="margin-top:0; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">تحصيل الإيرادات (آخر 30 يوم)</h3>
-        <div style="height: 300px; position: relative;">
-            <canvas id="financialTrendsChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Specialization Distribution -->
-    <div style="background: #fff; padding: 25px; border: 1px solid var(--workedia-border-color); border-radius: 12px; box-shadow: var(--workedia-shadow);">
-        <h3 style="margin-top:0; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">توزيع التخصصات المهنية</h3>
-        <div style="height: 300px; position: relative;">
-            <canvas id="specializationDistChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<?php
-$top_delayed = Workedia_Finance::get_top_delayed_members(10);
-$govs = Workedia_Settings::get_governorates();
-?>
-<div style="background: #fff; padding: 25px; border: 1px solid var(--workedia-border-color); border-radius: 12px; box-shadow: var(--workedia-shadow);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-        <h3 style="margin:0; font-size: 1.1em; color: #e53e3e;">⚠️ قائمة الأعضاء الأكثر تأخراً في السداد</h3>
-        <a href="<?php echo add_query_arg('workedia_tab', 'finance'); ?>" style="font-size: 12px; color: var(--workedia-primary-color); text-decoration: none; font-weight: 700;">عرض سجل المالية الشامل ←</a>
-    </div>
-    <div class="workedia-table-container" style="margin: 0; box-shadow: none; border: none;">
-        <table class="workedia-table" style="font-size: 13px;">
-            <thead>
-                <tr>
-                    <th>اسم العضو</th>
-                    <th>لجنة المحافظة</th>
-                    <th>المبلغ المستحق</th>
-                    <th>مدة التأخير</th>
-                    <th>إجراء</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($top_delayed)): ?>
-                    <tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">لا يوجد أعضاء متأخرون حالياً.</td></tr>
-                <?php else: foreach($top_delayed as $td): ?>
-                    <tr>
-                        <td style="font-weight: 700;"><?php echo esc_html($td['name']); ?></td>
-                        <td><?php echo esc_html($govs[$td['governorate']] ?? $td['governorate']); ?></td>
-                        <td style="color: #e53e3e; font-weight: 800;"><?php echo number_format($td['balance'], 2); ?> ج.م</td>
-                        <td><span class="workedia-badge workedia-badge-urgent"><?php echo $td['delay_years']; ?> سنة/سنوات</span></td>
-                        <td>
-                            <a href="<?php echo add_query_arg(['workedia_tab' => 'member-profile', 'member_id' => $td['id']]); ?>" class="workedia-btn workedia-btn-outline" style="padding: 4px 10px; font-size: 11px;">الملف المالي</a>
-                        </td>
-                    </tr>
-                <?php endforeach; endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
 <?php endif; ?>
 
 
@@ -197,52 +137,6 @@ function workediaDownloadChart(chartId, fileName) {
         }
 
         const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } };
-
-        // Data for Financial Trends
-        const financialData = <?php echo json_encode($stats['financial_trends']); ?>;
-        const trendLabels = financialData.map(d => d.date);
-        const trendValues = financialData.map(d => d.total);
-
-        new Chart(document.getElementById('financialTrendsChart').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: trendLabels,
-                datasets: [{
-                    label: 'إجمالي التحصيل اليومي',
-                    data: trendValues,
-                    borderColor: '#38a169',
-                    backgroundColor: 'rgba(56, 161, 105, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: chartOptions
-        });
-
-        // Data for Specializations
-        const specData = <?php
-            $specs_labels = Workedia_Settings::get_specializations();
-            $mapped_specs = [];
-            foreach($stats['specializations'] as $s) {
-                $mapped_specs[] = [
-                    'label' => $specs_labels[$s->specialization] ?? $s->specialization,
-                    'count' => $s->count
-                ];
-            }
-            echo json_encode($mapped_specs);
-        ?>;
-
-        new Chart(document.getElementById('specializationDistChart').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: specData.map(d => d.label),
-                datasets: [{
-                    data: specData.map(d => d.count),
-                    backgroundColor: ['#3182ce', '#e53e3e', '#d69e2e', '#38a169', '#805ad5', '#d53f8c']
-                }]
-            },
-            options: chartOptions
-        });
 
         const createOrUpdateChart = (id, config) => {
             if (window.workediaCharts[id]) {

@@ -3,9 +3,7 @@ if (!defined('ABSPATH')) exit;
 
 $status_filter = $_GET['status'] ?? 'pending';
 $requests = Workedia_DB::get_update_requests($status_filter);
-$specs = Workedia_Settings::get_specializations();
 $govs = Workedia_Settings::get_governorates();
-$grades = Workedia_Settings::get_professional_grades();
 ?>
 
 <div class="workedia-admin-dashboard" dir="rtl">
@@ -66,8 +64,6 @@ $grades = Workedia_Settings::get_professional_grades();
                                         case 'phone': $label = 'الهاتف'; break;
                                         case 'email': $label = 'البريد'; break;
                                         case 'governorate': $label = 'المحافظة'; $v = $govs[$v] ?? $v; $old_val = $govs[$old_val] ?? $old_val; break;
-                                        case 'specialization': $label = 'التخصص'; $v = $specs[$v] ?? $v; $old_val = $specs[$old_val] ?? $old_val; break;
-                                        case 'professional_grade': $label = 'الدرجة'; $v = $grades[$v] ?? $v; $old_val = $grades[$old_val] ?? $old_val; break;
                                     }
                                     if ($label) echo "<div><strong>$label:</strong> <span style='color: #c53030; text-decoration: line-through;'>$old_val</span> &larr; <span style='color: #2f855a;'>$v</span></div>";
                                 }

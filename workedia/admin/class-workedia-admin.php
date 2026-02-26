@@ -153,48 +153,7 @@ class Workedia_Admin {
             exit;
         }
 
-        if (isset($_POST['workedia_save_finance_settings'])) {
-            check_admin_referer('workedia_admin_action', 'workedia_admin_nonce');
-            Workedia_Settings::save_finance_settings(array(
-                'membership_new' => floatval($_POST['membership_new']),
-                'membership_renewal' => floatval($_POST['membership_renewal']),
-                'membership_penalty' => floatval($_POST['membership_penalty']),
-                'license_new' => floatval($_POST['license_new']),
-                'license_renewal' => floatval($_POST['license_renewal']),
-                'license_penalty' => floatval($_POST['license_penalty']),
-                'facility_a' => floatval($_POST['facility_a']),
-                'facility_b' => floatval($_POST['facility_b']),
-                'facility_c' => floatval($_POST['facility_c'])
-            ));
-            wp_redirect(add_query_arg(['workedia_tab' => 'global-settings', 'sub' => 'finance', 'settings_saved' => 1], wp_get_referer()));
-            exit;
-        }
 
-
-        if (isset($_POST['workedia_save_professional_options'])) {
-            check_admin_referer('workedia_admin_action', 'workedia_admin_nonce');
-            $grades_raw = explode("\n", str_replace("\r", "", $_POST['professional_grades']));
-            $grades = array();
-            foreach ($grades_raw as $line) {
-                $parts = explode("|", $line);
-                if (count($parts) == 2) {
-                    $grades[trim($parts[0])] = trim($parts[1]);
-                }
-            }
-            if (!empty($grades)) Workedia_Settings::save_professional_grades($grades);
-
-            $specs_raw = explode("\n", str_replace("\r", "", $_POST['specializations']));
-            $specs = array();
-            foreach ($specs_raw as $line) {
-                $parts = explode("|", $line);
-                if (count($parts) == 2) {
-                    $specs[trim($parts[0])] = trim($parts[1]);
-                }
-            }
-            if (!empty($specs)) Workedia_Settings::save_specializations($specs);
-            wp_redirect(add_query_arg(['workedia_tab' => 'global-settings', 'sub' => 'professional', 'settings_saved' => 1], wp_get_referer()));
-            exit;
-        }
 
         $member_filters = array();
         $stats = Workedia_DB::get_statistics();

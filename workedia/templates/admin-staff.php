@@ -157,9 +157,6 @@
                                 <div class="workedia-actions-dropdown">
                                     <button class="workedia-actions-trigger">الإجراءات <span class="dashicons dashicons-arrow-down-alt2"></span></button>
                                     <div class="workedia-actions-content">
-                                        <?php
-                                        $assigned = get_user_meta($u->ID, 'workedia_assigned_specializations', true) ?: (get_user_meta($u->ID, 'workedia_supervised_grades', true) ?: array());
-                                        ?>
                                         <a href="javascript:void(0)" onclick="workediaEditUser(JSON.parse(this.parentElement.dataset.user))" class="workedia-action-item">
                                             <span class="dashicons dashicons-edit"></span> تعديل البيانات
                                         </a>
@@ -172,7 +169,6 @@
                                             "email" => $u->user_email,
                                             "login" => $u->user_login,
                                             "role" => $role_slug,
-                                            "assigned" => $assigned,
                                             "officer_id" => get_user_meta($u->ID, "workediaMemberIdAttr", true),
                                             "phone" => get_user_meta($u->ID, "workedia_phone", true),
                                             "governorate" => get_user_meta($u->ID, "workedia_governorate", true),

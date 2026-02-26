@@ -30,9 +30,6 @@ $design = get_option('workedia_email_design_settings', [
 
 $templates = [
     'membership_renewal' => 'تجديد العضوية السنوية',
-    'license_practice' => 'تجديد تصريح المزاولة',
-    'license_facility' => 'تجديد ترخيص المنشأة',
-    'payment_reminder' => 'تنبيه المتأخرات المالية',
     'welcome_activation' => 'رسالة الترحيب والتفعيل',
     'admin_alert' => 'التنبيهات الإدارية العامة'
 ];
@@ -96,8 +93,6 @@ $templates = [
                             <code style="font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 3px;">{member_name}</code>
                             <code style="font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 3px;">{national_id}</code>
                             <code style="font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 3px;">{membership_number}</code>
-                            <code style="font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 3px;">{expiry_date}</code>
-                            <code style="font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 3px;">{balance}</code>
                         </div>
                     </div>
 
